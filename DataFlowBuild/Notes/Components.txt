@@ -1,0 +1,81 @@
+_____________________
+
+      COMPONENTS
+_____________________
+
+
+
+	Component Structure:
+
+		[Type] [Name] [Interface]
+		
+	Type:
+		- virtual: Only used as place holders.
+		- base: A type only, cannot be bound directly, but objects can be created
+		- static: Cannot have instances
+
+	Name:
+		- Name: Regular name. Base can be only name, cannot be array or map
+		- Name[] : Basically an array
+		- Name<type, type> : An map with <type,type,…> as the key
+
+	Interface:
+		- Either another interface or base compoonent name ":name"
+		- or actual signature (type1, type2 : type3, type 4)
+
+	Name is always caps.
+
+	Interface is simply a signature. it has to contain an actual signature. A base component can use interface signature but not the vice versa
+
+	Then you have properties for components (and not interfaces) which also can be sigular/array/map. But base cannot have arrays or maps. And also slot.
+
+EXAMPLES:
+
+	interface MyInterface (int, string : string, string[])
+
+	base component MyBase : MyInterface(X,Y:A,B)
+
+		var name2:type;
+
+		slot name2 InterfaceName(A,B:C,D)
+
+		slot name3(int X, string Y:real Z)
+
+		begin
+			... 
+		end ## End of Component
+
+	base component MyBase2 (int, string) ## Here only output ports are specified
+		...
+		end
+
+	virtual component MyComp1(int I:string J)
+
+		var string T
+
+		slot InterfaceName M(X,Y) 
+
+		end ## Virtual cannot have a body
+
+	static component MyComp3<int,int>(A,F):Interface
+
+		var int X
+
+		begin
+			...
+		end
+
+
+NOTES:
+	- Static cannot have instances and must have body
+	- Base can only have instances and must have body
+	- Virtual cannot have body, is only a place holder
+	- properties/slots cannot be array or maps for base
+
+
+
+
+
+
+
+

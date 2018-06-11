@@ -1,0 +1,49 @@
+module generate.
+
+% Picat> L=findall(X,member(X,[1,2,3])).
+% L=[1,2,3]
+% membchk(T erm, List)
+
+
+uniq(X) = Y =>
+	L=[],
+	foreach (I in X)
+		if not(membchk(I, L)) then L := [I|L] end
+	end,
+	Y = reverse(L).
+
+define_list() = Z =>
+	L = findall(X,define(X, _)),
+	Z=uniq(L).
+
+main_type(L) =>
+	write('domain'), nl,
+	
+	foreach (I in L)
+		write('\t'),
+		write(I),
+		write(' = '),
+		nl,
+		gen_type(I),
+		nl
+	end.
+	
+gen_type(X) =>
+	L=findall(Y, define(X, Y)),
+	N=length(L),
+	I=1,
+	foreach (Z in L)
+		%print_type(Z),
+		write(' '),
+		if (I=N) then
+			write('.')
+		else
+			write(';')
+		end,
+		nl,
+		I := I+1
+	end.
+
+%print_type(I) :-
+
+

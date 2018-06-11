@@ -1,0 +1,60 @@
+_____________________
+
+      PROGRAM
+_____________________
+
+
+Module contains:
+	
+	0. Namespace Name list
+
+	1. Constants::  all
+		a) Name : Identifier
+		b) Type  : defType option
+		c) Value : exprConst
+
+	2. Type definations : Name, typeDef Type 
+
+	3. Function definations
+		a) Name: Identifier
+		b) Param list: (typeDef option, Identifier)
+		c) Output type option
+		d) Body : funcStatement list
+
+	4. Predicate definations
+		a) Name: Identifier
+		b) Param list: (typeDef option, Identifier)
+		c) Body : predStatement list
+
+	5. Components definations
+		a) Name Identifier
+		b) Component Interface / Component (typeDef list Inputs, typeDef list Output)
+		c) Params: (Identifier Name, typeDef Type) list
+		d) Body: compStatement list
+
+	6. Table declaration:
+		a) Name Identifier
+		b) Types: typeDef list
+		c) Data: exprConst list list
+
+	7. Feature declarations
+
+		6.1 Feature Name
+
+		6.2 Feature:  (Input/Output), (Map, List and Var),  typeDefFea
+
+		6.3 Feature Function:
+			a) Name: Identifier
+			b) Param list: (typeDef option, Identifier)
+			c) Output type option
+			d) Body : funcStatement list
+
+		6.4 Feature Predicates:
+			a) Name: Identifier
+			b) Param list: (typeDef option, Identifier)
+			c) Body : feaStatement list 
+
+		6.4 Feature Start Predicate: feaStatement list 
+
+
+

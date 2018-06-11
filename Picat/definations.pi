@@ -1,0 +1,64 @@
+import generate.
+
+%define_list(
+
+
+%type (Name, parameter), dummy is automatically added for error control
+% parameter = be term(name, [parameters]) or list('type-name'), primitive(token type), type(name) or type (name, Description), anytoken(Description)
+
+define('project', X) ?=> X=$term('p', [$type('identifier1', 'ProjectName'), $list('p_pair', 'ProjectArgs'), $list('identifier1', 'BuildName'), $list('p_varvalue', 'BuildArgs'), $list('p_statement','MainBlock'), $list('p_group', 'GroupList')]).
+
+define('p_pair', X) ?=> X=$term('var',[$type('identifier1','VarName'), $type('token','VarValue')]).
+
+define('p_group', X) ?=> X=$term('p_grp', [$type('identifier1', 'GroupName'), $list('identifier1', 'ArgsList'), $list('p_statement', 'GroupBlock')]).
+
+% feature Name1.Name2.Name3.Name4(Arg1, Arg2, Arg3, Arg4) in "featurefile"
+define('p_statement', X) ?=> X=$term('feature', [ $type('str', 'FileName'), $list('identifier1', 'NameSpace'), $list('p_varvalue', 'ArgsList')]).
+
+% group Name(Arg1, Arg2, Arg3, Arg4)
+define('p_statement', X) ?=> X=$term('group', [ $type('identifier1', 'GroupName'), $list('p_varvalue', 'ArgsList')]).
+
+% project Name(Arg1, Arg2, ...) in "project file"
+define('p_statement', X) ?=> X=$term('project', [ $type('str', 'FileName'), $type('identifier1', 'ProjectName'), $list('p_varvalue', 'ArgsList')]).
+
+% ------------------------------------------------------------------
+
+parse('project', 'project', X, ['Output = p(PN, PA, BN, BA, L,G)']) => X=[ $read('identifier1', 'PN'), $match('open1'), $read('project_pairs', 'PA'), $optmatch('white'), $match('close1'), $optmatch('white'),	$match('symbols','='), $optmatch('white'), $read('namespace', 'BN'), $match('open1'), $read('build_vars', 'BA'), $optmatch('white'), $match('close1'), $read('endline'), $read('statementlist', 'L'), $match('identifier1', 'End'), $match('endline'), $read('grouplist', 'G')].
+
+
+parse('project_pairs', 'p_pair*', X, ['Output = [H|T]']) => X=[$read('p_pair', 'H'), $optmatch('white'), $match('symbols',','), $read('project_pairs', 'T')].
+parse('project_pairs', 'p_pair*', X, ['Output = [H]']) => X=[$read('p_pair', 'H')].
+
+parse('p_pair', 'p_pair', X, ['Output = var(N, V)']) => X=[$optmatch('white'), $read('identifier1', 'N'), $match('symbols','='), $read('p_value', 'V')].
+
+parse('p_value', 'token', X, ['Output = X']) => X=[$optmatch('white'), $read('identifier0', 'X')].
+
+parse('statementlist', 'p_statement*', X, ['Output = [H|T]']) => X=[$read('statement', 'H'), $match('endline'), $read('statementlist', 'T')].
+parse('statementlist', 'p_statement*', X, ['Output = [H]']) => X=[$read('statement', 'H')].
+
+
+parse('build_vars', 'p_pair*', X, ['Output = [H|T]']) => X=[$read('b_value', 'H'), $optmatch('white'), $match('symbols',','), $read('build_vars', 'T')].
+parse('build_vars', 'p_pair*', X, ['Output = [H]']) => X=[$read('b_value', 'H')].
+
+parse('b_value', 'token', X, ['Output = X']) => X=[$optmatch('white'), $read('identifier0', 'X')].
+parse('b_value', 'token', X, ['Output = X']) => X=[$optmatch('white'), $read('identifier1', 'X')].
+
+parse('filestr', 'token', X, ['Output = X']) => X=[$optmatch('white'), $read('str', 'X')].
+
+parse('namespace', 'token*', X, ['Output = [H|T]']) => X=[$read('identifier1', 'H'), $match('symbols','.'), $read('build_name', 'T')].
+parse('namespace', 'token*', X, ['Output = [H]']) => X=[$read('identifier1', 'H')].
+
+parse('grouplist', 'p_group*', X, ['Output = [H|T]']) => X=[$read('group', 'H'), $read('grouplist', 'T')].
+parse('grouplist', 'p_group*', X, ['Output = [H]']) => X=[$read('group', 'H')].
+
+parse('group', 'p_group', X, ['Output = p_grp(N,A,L)']) => X=[$read('identifier1', 'N'), $read('open1'), $read('argslist', 'A'), $optmatch('white'), $match('close1'), $match('endline'), $read('statementlist', 'L'), $match('identifier1', 'End'), $match('endline')].
+
+parse('argslist', 'tokens*', X, ['Output = [H|T]']) => X=[$optmatch('white'), $read('identifier1', 'H'), $optmatch('white'), $match('symbols',','), $read('argslist', 'T')].
+parse('argslist', 'tokens*', X, ['Output = [H]']) => X=[$optmatch('white'), $read('identifier1', 'H')].
+
+parse('statement', 'p_statement', X, ['Output = feature(F, L, A)'])=> X=[$match('identifier0','feature'), $match('white'), $read('namespace', 'L'), $match('open1'), $read('build_vars', 'A'), $optmatch('white'),$read('close1'), $match('white'), $match('identifier0','in'), $match('white'), $read('str', 'F')].
+parse('statement', 'p_statement', X, ['Output = group(N, A)']) => X=[$match('identifier0','group'), $match('white'), $read('identifier1', 'N'), $read('open1'), $read('build_vars', 'A'), $optmatch('white'), $read('close1'), $match('white'), $match('identifier0','in'), $match('white'), $read('str', 'F')].
+parse('statement', 'p_statement', X, ['Output = project(F,N, A)']) => X=[$match('identifier0','project'), $match('white'), $read('identifier1', 'N'), $read('open1'), $read('build_vars', 'A'), $optmatch('white'), $read('close1'), $match('white'), $match('identifier0','in'), $match('white'), $read('str', 'F')].
+
+
+

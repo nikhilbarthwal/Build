@@ -1,0 +1,39 @@
+/* ********** Import Packages ********** */
+
+#include @"pfc\list\list.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\application\Exe\exe.ph"
+#include @"pfc\console\console.ph"
+#include @"pfc\exception\exception.ph"
+#include @"pfc\core.ph"
+
+
+
+/* ********** Import Headers ********** */
+
+#include @"main.cl"
+#include @"errors.cl"
+#include @"lexer.cl"
+#include @"parser.cl"
+#include @"structure.cl"
+#include @"printer.cl"
+%#include @"execute.cl"
+
+
+/* ********** Import Source Code ********** */
+
+#include @"main.pro"
+#include @"errors.pro"
+#include @"lexer.pro"
+#include @"parser.pro"
+#include @"structure.pro"
+#include @"printer.pro"
+%#include @"execute.pro"
+
+
+
+goal
+    mainExe::run(main::run).
+
+

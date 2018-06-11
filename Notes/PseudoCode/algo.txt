@@ -1,0 +1,49 @@
+Algorithm
+
+Module Project -- Will parse the project
+  - Parse(ProjectFile:string): bool -- Will parser project file and might generate warnings. Will return true if parsing passed
+  - Get(Var:string): constExpr -- Will return the directive
+  - GetSourcePaths(): string list -- Path of source files passed
+
+_____________________________________________________________________________________________________
+
+Module ParseSource -- Will parse source code
+
+  type Value = //TODO: Populate is here or somewhere else
+
+  let ProgramMulti = new MultiMap(Key:list<string>, Value)
+
+
+  Process(D,L):
+    Print("Processing folder " + F+ "...")
+      let F in all features files in D
+        match (Parse(F)) with
+        | OK(Source) -> Refine(Defs)
+        | Error(EL) -> for e in EL do Error.push(e)
+
+  procedure Main
+    for s in Project.SourDirs() do
+      Process(s, [])
+
+_____________________________________________________________________________________________________
+
+
+define Main: option
+Process JSON Build defination
+Collect all feature files
+Parser feature files to collect definations
+Remove All duplicate entires in definations
+Resolve all refenences & Detect imporper references
+Build Dependency graphs
+Use Dependency graphs + Node to Detect cycles & Trim Graph
+Refine code on this model
+
+------
+
+Transform graph into predicate model
+Check Design Errors
+Build the program to generate source files
+
+_____________________________________________________________________________________________________
+
+Either<A,B> = First<A> or Second<B>

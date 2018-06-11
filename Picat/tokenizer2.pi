@@ -1,0 +1,262 @@
+module tokenizer.
+
+import myutils.
+
+% --- Check Comment ---
+private
+check_comment(L,T) => L=[H1,H2|T], H1='-', H2='-'.
+
+
+% --- Perform filtering options on Tokens list ---
+private
+filter(F,N,X) = Y, X=[] => Y=$empty(F,N).
+filter(F,N,X) = Y, X=[H] =>	if (H = $symbols(_,_,_,"\\")) then Y=$empty(F,N) else Y=$no(X) end.
+filter(_F,_N,X) = Y, not(list(X)) => Y=X.
+filter(F,N,X) = Y, X=[H1,H2|T], H1=$symbols(_,_,_,"\\") => if (H2=$white(_,_,_)) then L=chop(reverse(T)), Y=$yes(L) else L=$error2(F, N, 'The \\ character should be preceded by white space') end.
+filter(_F,_N,X) = Y => L=chop(reverse(X)), Y=$no(L).
+
+private iswhite(Z) => Z='\t' ; Z='\n' ; Z='f' ; Z='v' ; Z='\r' ; Z=' '.
+private isdigit(Z) => digit(Z).
+private islower(Z) => X=char_code(Z), X > 96, X < 123.
+private isupper(Z) => X=char_code(Z), X > 64, X < 91.
+private isalphanum(Z) => isdigit(Z) ; islower(Z) ; isupper(Z).
+private issomething(Z) => iswhite(Z) ; isdigit(Z) ; islower(Z) ; isupper(Z) ; isalphanum(Z) ; Z='(' ; Z=')' ; Z='{' ; Z='}' ; Z='[' ; Z='['.  
+private isnothing(Z) => not(issomething(Z)).
+
+
+private
+% Read "(" token ...
+readtoken(F, N, P, L, PP, LL, Z), L=[H|T], H='(' =>
+	Z=$open1(F,N,P),
+	PP=P+1,
+	LL=T.
+
+% Read ")" token ...
+readtoken(F, N, P, L, PP, LL, Z), L=[H|T], H=')' =>
+	Z=$close1(F,N,P),
+	PP=P+1,
+	LL=T.
+
+% Read "{" token ...
+readtoken(F, N, P, L, PP, LL, Z), L=[H|T], H='{' =>
+	Z=$open2(F,N,P),
+	PP=P+1,
+	LL=T.
+
+% Read "}" token ...
+readtoken(F, N, P, L, PP, LL, Z), L=[H|T], H='}' =>
+	Z=$close2(F,N,P),
+	PP=P+1,
+	LL=T.
+
+% Read "[" token ...
+readtoken(F, N, P, L, PP, LL, Z), L=[H|T], H='[' =>
+	Z=$open3(F,N,P),
+	PP=P+1,
+	LL=T.
+
+% Read "]" token ...
+readtoken(F, N, P, L, PP, LL, Z), L=[H|T], H=']' =>
+	Z=$close3(F,N,P),
+	PP=P+1,
+	LL=T.
+
+% Read Comment token ...
+readtoken(F, N, P, L, PP, LL, Z), check_comment(L,T) =>
+	Z=$comment(F,N,P,T),
+	PP=0,
+	LL=[].
+
+	
+% Read White token ...
+readtoken(F, N, P0, L0, P1, L1, Z), L0=[H|T], iswhite(H) =>
+	S=[],
+	E=0,
+
+	while(iswhite(H), E=0)
+		S := [H|S],
+		if (T=[]) then
+			E := 1
+		else
+			H := head(T),
+			T := tail(T)
+		end
+	end,
+	
+	if (E=1) then L1=[] else L1=[H|T] end,
+	P1 = P0+length(S),
+	Z=$white(F,N,P0).
+
+
+% Read number ...
+readtoken(F, N, P0, L0, P1, L1, Z) ,L0=[H|T], isdigit(H) =>
+	S=[],
+	E=0,
+	
+	while(isdigit(H), E=0)
+		S := [H|S],
+		if (T=[]) then
+			E := 1
+		else
+			
+			H := head(T),
+			T := tail(T)
+		end
+	end,
+
+	if (E=1) then L1=[] else L1=[H|T] end,
+	SS=to_integer(reverse(S)),
+	P1 = P0+length(S),
+	Z=$integer(F,N,P0,SS).
+
+
+% Read Quoted String ...
+readtoken(F, N, P0, L0, P1, L1, Z) ,L0=[H|T], H='\"' =>
+	S=[],
+	E=0,
+
+	do
+		if (T=[]) then
+			E := $error3(F,N,P0,"Abnormal string termination")
+		else
+			H := head(T),
+			T := tail(T),
+			
+			if (H = '\"') then
+				E := 1
+			elseif (H='\\') then
+				H := head(T),
+				T := tail(T),
+
+				    if (H='n')  then S:=['\n'|S]
+				elseif (H='a')  then S:=['\a'|S]
+				elseif (H='b')  then S:=['\b'|S]
+				elseif (H='f')  then S:=['\f'|S]
+				elseif (H='\"') then S:=['\"'|S]
+				elseif (H='t')  then S:=['\t'|S]
+				elseif (H='r')  then S:=['\r'|S]
+				elseif (H='\\') then S:=['\\'|S]
+				else
+					P = P0+1+length(S),				
+					E := $error3(F,N,P,"Unable to understand the escape sequence")
+				end
+			else
+				S := [H|S]				
+			end
+		end
+
+
+
+	while (E=0),
+
+	if (E=1) then
+		P1 = P0+2+length(S),
+		L1=T,
+		SS=reverse(S),
+		Z=$str(F, N, P0, SS)
+	else
+		P1=0,
+		L1=[],		
+		Z=E
+	end.
+
+
+% Read lower identifier ...
+readtoken(F, N, P0, L0, P1, L1, Z) ,L0=[H|T], islower(H) =>
+	S=[],
+	E=0,
+
+	while(isalphanum(H), E=0)
+		S := [H|S],
+		if (T=[]) then
+			E := 1
+		else
+			
+			H := head(T),
+			T := tail(T)
+		end
+	end,
+
+	if (E=1) then L1=[] else L1=[H|T] end,
+	SS = reverse(S),
+	P1 = P0+length(S),
+	Z=$identifier0(F, N, P0, SS).
+
+
+% Read upper identifier ...
+readtoken(F, N, P0, L0, P1, L1, Z) ,L0=[H|T], isupper(H) =>
+	S=[],
+	E=0,
+
+	while(isalphanum(H), E=0)
+		S := [H|S],
+		if (T=[]) then
+			E := 1
+		else
+			
+			H := head(T),
+			T := tail(T)
+		end
+	end,
+
+	if (E=1) then L1=[] else L1=[H|T] end,
+	SS = reverse(S),
+	P1 = P0+length(S),
+	Z=$identifier1(F, N, P0, SS).
+
+
+% Read symbols ...
+readtoken(F, N, P0, L0, P1, L1, Z)  =>
+	S=[],
+	L0=[H|T],
+	E=0,
+
+	while(isnothing(H), E=0)
+		S := [H|S],
+		if (T=[]) then
+			E := 1
+		else
+			
+			H := head(T),
+			T := tail(T)
+		end
+	end,
+
+	if (E=1) then L1=[] else L1=[H|T] end,
+	SS = reverse(S),
+	P1 = P0+length(S),
+	Z=$symbols(F,N,P0,SS).
+
+% --- Tokenize line ---
+private
+tokenize_line(F, N, S) = L =>
+	Z =[],
+	S0=S,
+	P0=1,
+
+	% Break string S0 into tokens until it is empty ...
+	while (S0 != [])
+		readtoken(F, N, P0, S0, P1, S1, T),
+		S0 := S1,
+		P0 := P1,
+		if (T!=$comment(_,_,_,_)) then Z := [T|Z] end
+	end,
+	L=filter(F,N,chop(Z)).
+
+	
+merge_file(X,Y), X=[] => Y=[].
+merge_file(X,Y), X=[H|T], H=$empty(_,_) => merge_file(T,Y).
+merge_file(X,Y), X=[H|T], H=$no(Z) => Y=[HH|TT], HH=Z, merge_file(T,TT).
+merge_file(X,Y), X=[H|T], H=$yes(Z) => T0=[H1|T1], H2=Z++H1, Y=[H2|T1], merge_file(T,T0).
+
+
+tokenize_file(F,R) = L =>
+	T=[],
+	N=0,
+	foreach(I in R)
+		N:=N+1,
+		H=tokenize_line(F,N,I),
+		T := [H|T]
+	end,
+	L=reverse(T).
+

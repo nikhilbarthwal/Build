@@ -1,0 +1,97 @@
+const Name = value; @ The const expressions, no vars
+
+var type Name;
+
+var Name(type1 Name1, type2 Name2, type3 Name3); @ Data stores with mandatory types and optional names. No templates
+
+do N(A, B) { } @ The actions, no types allowed
+
+define P(A, B) @Predicates, no types needed here
+
+function Name(P1, P2) 'Functions, no types here'
+
+
+
+type UnionName<T1, T2>
+{
+	class Name(type1 N1, type2 N2)
+	{
+		the defination
+	}
+	
+	class Name2( , )
+	{
+	@dsd
+	}
+}
+
+Note
+
+TODO
+
+
+note
+
+class Name<T1, T2>()
+{
+//defination
+}
+
+All class names are unique, and there is no interface. Type detection is automatic!
+
+
+X(U,P) = class(U, P, A) @ This is the partial assignment
+
+' So how would types look like? Simple ones like list<int>
+But partial templates would look like list<int>(string, char, int, map<list, string>)
+'
+
+_______________________________________________
+
+do
+{
+	//somehting
+|
+	//something else
+}
+
+
+
+do Name(A, B, C)
+{
+	//something
+|
+	//something else
+}
+
+
+function Fun(A, B, C)
+{
+	// define functions
+}
+
+note
+
+define (* Name(seomthing, something) // Should be checks? *)
+{
+	// Something
+| // And should be or
+'s?
+	// Something
+}
+
+
+var Name = ok!
+
+var type Nikhil'
+
+
+nihil
+
+
+"moi"
+
+________________________________
+
+NOTE
+

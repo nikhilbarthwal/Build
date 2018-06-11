@@ -1,0 +1,191 @@
+% Module: Name is th one defines in def_module
+Module = program(Name, [ImportDefine], [ExportDefine], [FuncDefine], [ConditionDefine], [ComponentDefine], [ComponseDefine],  [BuildDefine])
+
+Import Define -> simpley a list of def_imports 
+Export Define -> set of def_export
+
+
+% Function define: Input list, output list, and list of list of satements (seperated by |)
+FuncDefine = function(Name, Input, Output, [[StatementBlocks]], Header)
+
+% Condition define: Input list, output list, and list of list of satements (seperated by |)
+ConditionDefine = condition(Name, Input, [[StatementBlocks]], Header))
+
+
+% Component define: Input list, output list, and list of list of satements (seperated by |)
+ComponnetDefine = component(Name, Input, [SlotList], [MultiSlotList], [StatementBlocks],Header)
+
+SlotList: slot(Name, [InpList], [OutputList], Header
+Multi SlotList: mslot(Name, [InpList], [OutputList], Header
+
+% Compose define: Input list, output list, and list of list of satements (seperated by |)
+ComponseDefine = compose(Name, Input, [SlotList], [MultiSlotList], [StatementBlocks])
+
+
+%Build define
+ConditionDefine = build(Name, [StatementBlocks])
+
+
+___________________________________ ERROR CHECKS ___________________________________
+
+%
+% ----- FCall -----
+%
+% name(exp1 exp2 exp3):r --> fcall(Name, E, R)     
+% module.name(exp1 exp2 exp3):r --> fcall( (Module, Name), E, R)     
+
+
+
+
+%
+%
+% Var in List --> mem(Var, List, Token)
+
+Check: Var does no shaow existing vaiable  add Var to lists (Specifiy mode - should var be o no)
+
+%
+% ----- Expression -----
+%
+% if Condition then Expression else Expression --> expr_if(Cond, Exp1, Exp2)
+Check: Condition is valid, expressions are valid
+
+% Exp1 + Exp2 --> add(Exp1, Exp2)
+Check: Expressions are valid
+
+% Exp1 - Exp2 --> sum(Exp1, Exp2)
+Check: Expressions are valid
+
+
+% Exp1 * Exp2 --> multiply(Exp1, Exp2)
+% Exp1 / Exp2 --> divide(Exp1, Exp2)
+% Exp1 // Exp2 --> int_divide(Exp1, Exp2)
+% Exp1 % Exp2 --> modulus(Exp1, Exp2)
+% Exp1 ^ Exp2 --> concat(Exp1, Exp2)
+% Exp1 & Exp2 --> join(Exp1, Exp2)
+% Exp1 ++ Exp2 --> add_list(Exp1, Exp2)
+% Exp1 .. Exp2 --> gen(Exp1, Exp2)
+% map[ MajorList : Expr ?-  Cond ] --> map2(MajorList, Expr, Cond)
+% map[ MajorList : Expression ] --> map1(MajorList, Expr)
+% { Expression }
+% Call: fcall(N, I, 0)
+Check: Module exists, Function exists,  R is a valid ouput parameters,Input  Expressions are valid
+Check: or is a API functions
+Check: Name does not shadow another function or API function
+
+
+% Variable --> variable(Name)
+CHECK: Var is in the list
+
+
+% List or Number
+% (Expression) --> Expression
+%
+% ----- Condition -----
+%
+% Membership
+CHECK: Var is in the list
+
+
+% if C1 then C2 --> cond_if1(C1, C2)
+% if C1 then C2 else C3 --> cond_if2(C1, C2, C2)
+% A and B --> and(A, B)
+% A or B --> or(A, B)
+% A < B --> lt(A, B)
+% A > B --> gt(A, B)
+% A => B --> ge(A, B)
+% A >= B --> ge(A, B)
+% A <= B --> le(A, B)
+% A =< B --> le(A, B)
+% A = B --> eq(A, B)
+% A != B --> ne(A, B)
+CHECK: A, B, C1 C2, C3 ... all are valid
+
+% Condition Call : f(exp1 exp2 exp3)
+CHECK: F exists, exp1, exp2, ae all valid, module exists
+
+
+% not(C) --> inverse(C)
+% (C) --> C
+%
+% ----- Location -----
+%
+% [ var1 var2 var3 ] --> [var1, va2 , var3]
+%
+% ----- Statement -----
+%
+% [ --> begin(Token)
+% ] --> end(Token)
+% | --> alt(Token)
+% Function Header --> def_func(Name, Input, Ouput)
+CHECK: Should not exists or shadow API, And Input, Pout to VarList
+
+% Condition {Header:Name( Inp1 Inp2 .. )} --> def_cond(Name, Input)
+CHECK: Should not exists or shadow API
+
+% Export {Variable:V} : {Expression:e} --> def_export(V, E)
+CHECK: Should not be defines before, expression is valid
+
+% Import {Variable:V1} : {Variable:V2} --> def_import(V1 V2)
+CHECK: Should be defined before, expression is valid
+
+% Component header --> def_component(Name, Input, Ouput)
+CHECK: Should not be defined before, InptOutput should not shadow Imprort
+
+%Compose header -->  def_compose(Name, Input, Ouput)
+CHECK: Should not exists or shadow API, And Input, Pout to VarList
+
+%-Header --> def_slot(Name, Input, Output)
+CHECK: Should not be dfines twice
+
+%+Header --> def_multislot(Name, Input, Output)
+CHECK: Should not be dfines twice
+
+% Statement1 | Statement2 --> statement_or(Statement1, Statement2)
+% Statement1 ; Statement2 --> statement_and(Statement1, Statement2)
+% component {Identifier:X} : {Identifier:Y} --> component(X, Y)
+% component {Identifier:Z} : {Identifier:X}.{Identifier:Y} --> component(Z,(X, Y))
+$X is not define previously defines, Y, and Z exists
+
+% Identifier.SimpleHeader <+> SimpleHeader --> multibind(Parent, Slot, Child, I1, I2) <-- Change syntax
+% Identifier.SimpleHeader <-> SimpleHeader --> bind(Parent, Slot, Child, I1, I2) 
+Parent, SLot , Child is valid - I1 & I2 is valid with additional vaiables
+
+
+% Member
+var is not defines pevioys, exp is valid expression
+
+
+% else --> else
+% if Condition then  --> if_(C)
+% if Condition then Statement --> if_then(C, S)
+% if Condition then Statement  else Statement --> if_then_else(C, T, E)
+
+
+% Var := Expression --> set(V, E)
+Should no be defined before
+
+% while Condition --> while1(C)
+% while (Condition) Statement --> while2(C, S)
+% do --> do
+% for( List ) --> for1( List)
+CHECK: List is valid and does not shadown any paameter 
+
+for( List ) Statement  -> for2(List, Statement)
+% Condition: fcall(N, I, 0)
+% Module Name --> def_module(V)
+% Build Name --> build(Name)
+% file FileName in Location : Call --> bfile(FileName, Header, Location) -> call should b valid
+% copy FileName in Location : copy(FileName) --> filecopy(FileName, CopyName, Location)
+% folder variable in Location -->  bfolder(Name, Location)
+% include variable in Location --> binclude(Name, Location)
+%
+% ******************** PROJECT STATEMENTS ******************** 
+%
+% Prayog {Identifier:Name} --> prayog(Name)     The first line of the project, Identifies which build is to be build
+% [ --> Begin(H)
+% ] --> End(H)
+% | --> Alt(H)
+% Target Identifier --> target(V)
+% include "FileName" --> pinclude(Filename)
+% {Identifier:V} <- {Data:D} --> set(V,D)
+% (Identifier:V} -> {Expression:E} --> report(V,E)

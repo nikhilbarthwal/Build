@@ -1,0 +1,24 @@
+% ***********************************************************
+%    TRANSFORM: Tranform program into structure
+% ***********************************************************
+
+class transform
+    open core, common, program
+
+    structType =
+            structFunc(pos{string} Name, funcBody);
+            structPred(pos{string} Name, predBody*);
+            structConst(pos{string} Name, pos{contsData});
+            structError(pos{expr}, errorBody*);
+            structFile(pos{expr} FileName, pos{expr} FileContents ,predBody*).
+
+    errorBody = (pos{expr} Message, pos{predStatement}* Body)
+    fileBody = (pos{expr} Name, pos(expr) Content, pos{predStatement}* Body)
+    
+    transform = list of struct
+
+    predicates
+        main: (program, structure) procedure(i,o).
+
+end class transform
+

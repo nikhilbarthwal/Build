@@ -1,0 +1,13 @@
+/L1"NOTES" NOTE_LANG Line Comment = @ Block Comment On = (* Block Comment Off = *) File Extensions = NOTE 
+/Indent Strings = "{"
+/Unindent Strings = "}"
+/Open Brace Strings =  "{" "(" "["
+/Close Brace Strings = "}" ")" "]"
+/Open Fold Strings = "{"
+/Close Fold Strings = "}"
+/C1"Keywords"
+note
+NOTE
+Note
+/C2"Classes"
+TODO

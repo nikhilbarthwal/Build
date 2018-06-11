@@ -1,0 +1,83 @@
+% ***********************************************************
+%    MAIN: Main Module
+% ***********************************************************
+
+
+1. Generator Implementation
+2. Execute Implementation (Thu)
+3. Tranforms Implementation (Fri)
+4. Validate Implementation (Mon)
+5. Parser Implementation (Tue)
+6. Lexer Implementation (Wed)
+
+
+
+[A] Add Types : End of next week
+[B] Add Namespaces : End of next to next week
+[C] Add Standard Library : Long weekend
+
+
+
+/* ********** Import Packages ********** */
+
+#include @"pfc\list\list.ph"
+
+
+/* ********** Import Headers ********** */
+
+#include @"main.cl"
+
+/* ********** Import Source Code ********** */
+
+#include @"main.pro"
+#include @"errors.pro"
+
+
+
+
+
+class main
+    open core, common
+
+predicates
+    run : core::runnable.
+
+end class main
+
+implement main
+    open core
+
+class predicates
+    start: (string) determ (i).
+
+clauses
+    run():-
+        console::init(),
+        if (start(string::trim(mainExe::getCommandLine()))) then
+            stdio::nl, stdio::write("Exit Success !!!")
+        else
+            errors::display()
+        end if,.
+
+    start(FileName) :-
+        parse::main(FileName, Element),
+        errCheck(),
+        parser::main(Element, Program),
+        errCheck(),
+        transform::main(Program, Transform),
+        printer::main(FileName, Transform), %%% DEBUG %%%
+        errCheck(),
+        execute(Transform).
+
+end implement main
+
+goal
+    mainExe::run(main::run).
+
+____________________________________________________________________
+
+const = EvalExpr(state, expr, position)
+UnifyPatternDeterm (State) (Position, Pattern1) (Position, Pattern2) -> (State)
+
+UnifyPatternDeterm (State) (Pattern1) (Pattern2) -> (State) list
+

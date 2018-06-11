@@ -1,0 +1,64 @@
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AC895A63-4A64-4124-B46E-C7A41A624E3E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>BuildLib</RootNamespace>
+    <AssemblyName>BuildLib</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Utf8Output>true</Utf8Output>
+    <Name>BuildLib</Name>
+    <MergeAsm>/target:exe /out:&quot;..\$(TargetName).exe&quot; &quot;$(TargetDir)\$(TargetName).exe&quot; &quot;$(TargetDir)*.dll&quot;</MergeAsm>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">12</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
+  </PropertyGroup>
+  <Target Name="AfterBuild" Condition=" '$(Configuration)|$(OS)' == 'Release|Windows_NT' ">
+    <Exec Command="&quot;..\packages\ilmerge\tools\ILMerge.exe&quot; $(MergeAsm) /targetplatform:v4 /wildcards" />
+  </Target>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="FSharp.Core">
+      <HintPath>packages\FSharp.Core.4.0.0.1\lib\net40\FSharp.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="Source.fs" />
+    <Compile Include="Definations.fs" />
+    <Compile Include="Build.fs" />
+  </ItemGroup>
+  <Import Project="..\.paket\paket.targets" />
+  <!-- <Import Project="..\packages\NETStandard.Library\build\NETStandard.Library.targets"
+  Condition=Exists('..\packages\NETStandard.Library\build\NETStandard.Library.targets')" Label="Paket" /> -->
+  <!-- mono ILRepack.exe /target:exe /out:nikhil.exe /Users/nikhil/forge/tools/ConsulScanner/ConsulScanner/bin/Release/ConsulScanner.exe
+   /Users/nikhil/forge/tools/ConsulScanner/ConsulScanner/bin/Release/*.dll
+   /lib:/Library/Frameworks/Mono.framework/Versions/4.8.1/lib/mono/xbuild-frameworks/.NETPortable/v4.5
+ -->
+  <Import Project="$(FSharpTargetsPath)" />
+</Project>

@@ -1,0 +1,23 @@
+class Nmae(type, type, type)
+{
+
+error's
+or methods
+
+}
+
+
+type Name<T1,T2>
+
+define Nikhil(type1, type2, type3);
+
+pred Pred(type Type, type Type)
+{
+}
+
+
+fun type Func(type Type, type Type) 
+{
+}
+
+

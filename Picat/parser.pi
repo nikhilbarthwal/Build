@@ -1,0 +1,509 @@
+module parser.
+
+private
+logic_op(X,Y) => token_identifier0(clip(chop(X)),Z), (
+	Z="and", Y=and;
+	Z="or", Y=or ).
+
+private
+rel_op(X,Y) => token_symbols(clip(chop(X)),Z), (
+	Z="=", Y=eq;
+	Z=">", Y=gt;
+	Z="<", Y=lt;
+	Z="=>", Y=ge;
+	Z="=<", Y=le;
+	Z="=>", Y=ge;
+	Z="=<", Y=le;
+	Z="++", Y=merge,
+	Z="#", Y=concat ).
+
+private
+binary_op(X,Y) => token_symbols(clip(chop(X)),Z), (
+	Z="+", Y=add;
+	Z="-", Y=sub;
+	Z="*", Y=mul;
+	Z="/", Y=div ).
+
+private
+unary_op(X,Y) => token_symbols(clip(chop(X)),Z), (
+	Z="-", Y=negate	).
+
+% ----- Statement -----
+private
+
+%%
+% The And Statement:
+%   {statement:S1} & {statement:S2} --> statement(P,and(S1,S2))
+statement(L,Z),
+	split(L,L1,L2),
+	statement(L1,S1),
+	[H|T]=chop(L2),
+	token_symbols(H,"&"),
+	statement(chop(T),S2),
+	not(S1=$error2(_,_,_)), not(S1=$error2(_,_,_)),
+	not(S1=$error2(_,_,_,_)), not(S1=$error3(_,_,_,_)) =>
+	token_position(L,P),
+	Z=$statement(P,$and(S1,S2)).
+
+%%
+% The Or Statement:
+%   {statement:S1} | {statement:S2} --> statement(P,or(S1,S2))
+statement(L,Z),
+	split(L,L1,L2),
+	statement(L1,S1),
+	[H|T]=chop(L2),
+	token_symbols(H,"|"),
+	statement(chop(T),S2),
+	not(S1=$error2(_,_,_)), not(S1=$error2(_,_,_)),
+	not(S1=$error2(_,_,_,_)), not(S1=$error3(_,_,_,_)) =>
+	token_position(L,P),
+	Z=$statement(P,$or(S1,S2)).
+
+%%
+% Feature defination:
+%   FEATURE : {identifier0:Name} --> statement(P,def_feature(Name))
+statement(L,Z),
+	L=[H1|T1],	
+	token_identifier1(H1,"FEATURE"),
+	[H2|T2]=chop(T1),
+	token_symbols(H2,":") =>
+	token_position(L,P),
+	P=$pos(File,Num,Pos),
+	(
+		token_identifier0(chop(T2),Name),
+		Z=$statement(P,$def_feature(Name))
+	;
+		Z=$error3(File,Num,Pos,'Expecting a Upper case Identifier')
+	).
+
+%%
+% Model section declaration:
+%   MODEL :  --> statement(P,model)
+statement(L,Z),
+	split(L,X1,X2),
+	token_identifier1(X1,"MODEL"),
+	token_symbols(chop(X2),":") =>
+	token_position(L,P),
+	Z=$statement(P,model).
+
+%%
+% Script section declaration:
+%   SCRIPT :  --> statement(P,script)
+statement(L,Z),
+	split(L,X1,X2),
+	token_identifier1(X1,"SCRIPT"),
+	token_symbols(chop(X2),":") =>
+	token_position(L,P),
+	Z=$statement(P,script).
+
+%%
+% Assignment statement:
+%   X = Y --> statement(P, assign(X, Y))
+statement(L,Z),
+	split(L,L1,L2),
+	template(L1,X),
+	[H|T]=chop(L2),
+	token_symbols(H,"="),
+	data(T,Y) =>
+	token_position(L,P),
+	Z=$statement(P,$assign(X,Y)).
+
+%%
+% Function declaration:
+%   Function {Identifier1:N} (  {Aguments List:A} ) --> statement(P,def_function(N,A))
+statement(L,Z),
+	L=[H1,H2|T1],
+	token_identifier1(H1,"Function"),
+	token_white(H2) =>
+	token_position(L,P),
+	P=$pos(File,Num,_),
+	(
+		T1 = [H3,H4|T2],
+		T3 = trim(T2),
+		token_identifier1(H3,N),
+		token_open1(H4),
+		last(T3,R1,R2),
+		token_close1(R2),
+		delimited_args(R1, A),
+		Z=$statement(P,$def_function(N,A))
+	;
+		Z=$error2(File,Num,'Improper Function declaration')
+	).
+
+%%
+% Condition declaration:
+%   Condition {Identifier1:N} (  {Aguments List:A} ) --> statement(P,def_condition(N,A))
+statement(L,Z),
+	L=[H1,H2|T1],
+	token_identifier1(H1,"Condition"),
+	token_white(H2) =>
+	token_position(L,P),
+	P=$pos(File,Num,_),
+	(
+		T1 = [H3,H4|T2],
+		T3 = trim(T2),
+		token_identifier1(H3,N),
+		token_open1(H4),
+		last(T3,R1,R2),
+		token_close1(R2),
+		delimited_args(R1, A),
+		Z=$statement(P,$def_condition(N,A))
+	;
+		Z=$error2(File,Num,'Improper Condition declaration')
+	).
+
+%
+% Condition in statement:
+%   {condition:C=call_def(name(P,N),A)} --> statement(P,condition(N,A))
+statement(L,Z), condition(L,X) => X=$call_def(NN,A), NN=$name(P,N), Z=$statement(P,$condition(N,A)).
+
+% Default statement: error2(F,N,'Unable to interpret statement')
+statement(L,Z) =>
+	token_position(L,P),
+	P=$pos(F,N,_),
+	Z=$error2(F,N,'Unable to interpret statement').
+
+%%
+% Data definations:
+private
+
+%   {integer:N} --> data(P,num(N))
+data(L,Z), token_integer(L,N) => token_position(L,P), Z=$data(P, $num(N)).
+
+%   {identifier0:S} --> data(P,str(S))
+data(L,Z), token_identifier0(L,S) => token_position(L,P), Z=$data(P, $str(S)).
+
+%   {str:S} --> data(P,str(S))
+data(L,Z), token_str(L,S) => token_position(L,P), Z=$data(P, $str(S)).
+
+%   {data:D1} {operator:Op} {data:D2} --> data(P, binary_op(Op, D1, D2))
+data(L,Z),
+	split(L,X1,X2),
+	data(X1, D1),
+	[H|T]=chop(X2),
+	binary_op(H,Op),
+	data(chop(T), D2) =>
+	token_position(L,P),
+	Z=$data(P,$binary_op(Op, D1, D2)).
+
+%   [{data:D1}, {data:D2}, {data:D3}, ... ] --> data_list(D), D=[D1, D2, D3, ...]
+data(L,Z),
+	L=[H|T],
+	split(T,X1,X2),
+	token_open3(H),
+	token_close3(chop(X2)),
+	delimited_data(chop(X1), D) =>
+	Z=$data_list(D).
+
+%   {identifier0:N}({data:D1}, {data:D2}, {data:D3}, ... ) --> data_term(name(P,N),D), D=[D1, D2, D3, ...]
+data(L,Z),
+	L=[H1,H2|T],
+	split(T,X1,X2),
+	token_identifier0(H1,N),
+	token_open1(H2),
+	token_close1(chop(X2)),
+	delimited_data(chop(X1), D) =>
+	token_position(L,P),
+	Z=$data_term($name(P,N),D).
+
+%   ({data:A}) --> A
+data(L,Z),
+	L=[H|T],
+	token_open1(H),
+	TT=trim(T),
+	last(TT,R1,R2),
+	token_close1(R2),
+	expr(R1,ZZ) => Z=ZZ.
+
+%%
+% Comma seperated data elements:
+private
+
+%   {data:D1}, {data:D2}, {data:D3}, ... --> D=[D1, D2, D3, ...]
+delimited_data(X, Z), X=[] => Z=[].
+delimited_data(X, Z), data(X,D) => Z=[D].
+delimited_data(X, Z),
+	split(X,X1, X2), data(X1,H), [HL|TL]=chop(X2), token_symbols(HL,","), delimited_data(chop(TL),T) => Z=[H|T].
+
+%%
+% Expression definations:
+private
+
+%   {integer:N} --> expr(P,num(N))
+expr(L,Z), token_integer(L,N) => token_position(L,P), Z=$expr(P, $num(N)).
+
+%   {identifier0:S} --> expr(P,str(S))
+expr(L,Z), token_identifier0(L,S) => token_position(L,P), Z=$expr(P, $str(S)).
+
+%   {str:S} --> expr(P,str(S))
+expr(L,Z), token_str(L,S) => token_position(L,P), Z=$expr(P, $str(S)).
+
+%   {operator:Op} {expr:D} --> expr(P, unary_op(Op, D))
+expr(L,Z),
+	L=[H|T],
+	unary_op(H,Op),
+	expr(trim(T), D) =>
+	token_position(L,P),
+	Z=$expr(P,$unary_op(Op, D)).
+
+%   {expr:D1} {operator:Op} {expr:D2} --> expr(P, binary_op(Op, D1, D2))
+expr(L,Z),
+	split(L,X1,X2),
+	expr(X1, D1),
+	[H|T]=chop(X2),
+	binary_op(H,Op),
+	expr(trim(T), D2) =>
+	token_position(L,P),
+	Z=$expr(P,$binary_op(Op, D1, D2)).
+
+%   If {condition:C} Then {expr:E1} Else {expr:E2} --> expr_if(P,C,E1,E2)
+expr(L,Z),
+	L=[H1,H2|T1],
+	token_identifier1(H1,'If'),
+	token_white(H2),
+	split(T1,L1,L2),
+	condition(chop(L1),C),
+	L2=[H3,H4,H5|T3],
+	token_white(H3),
+	token_identifier1(H4,'Then'),
+	token_white(H5),
+	split(T3,L3,L4),
+	expr(L3,E1),
+	L4=[H6,H7,H8|T4],
+	token_white(H6),
+	token_identifier1(H7,'Else'),
+	token_white(H8),
+	expr(T4,E2) =>
+	token_position(L,P),
+	Z=expr_if(P,C,E1,E2).
+
+%   [{expr:D1}, {expr:D2}, {expr:D3}, ... ] --> expr_list(D), D=[D1, D2, D3, ...]
+expr(L,Z),
+	L=[H|T],
+	split(T,X1,X2),
+	token_open3(H),
+	token_close3(chop(X2)),
+	delimited_expr(chop(X1), D) =>
+	Z=$expr_list(D).
+
+%   {identifier0:N}({expr:D1}, {expr:D2}, {expr:D3}, ... ) --> expr_term(name(P,N),D), D=[D1, D2, D3, ...]
+expr(L,Z),
+	L=[H1,H2|T],
+	last(trim(T),R1,R2),
+	token_identifier0(H1,N),
+	token_open1(H2),
+	token_close1(R2),
+	delimited_expr(R1, D) =>
+	token_position(L,P),
+	Z=$expr_term($name(P,N),D).
+
+%   ({expr:A}) --> A
+expr(L,Z),
+	L=[H|T],
+	token_open1(H),
+	TT=trim(T),
+	last(TT,R1,R2),
+	token_close1(R2),
+	expr(R1,ZZ) => Z=ZZ.
+
+%%
+% Comma seperated expressions:
+private
+
+%   {expr:E1}, {expr:E2}, {expr:E3}, ... --> E=[E1, E2, E3, ...]
+delimited_expr(X, Z), X=[] => Z=[].
+delimited_expr(X, Z), expr(X,D) => Z=[D].
+delimited_expr(X, Z),
+	split(X,X1, X2), expr(X1,H), [HL|TL]=chop(X2), token_symbols(HL,","), delimited_expr(trim(TL),T) => Z=[H|T].
+
+%%
+% Condition definations:
+private
+
+%   {expr:D1} {rel_op:Op} {expr:D2} --> condition(P, rel_op(Op, D1, D2))
+condition(L,Z),
+	split(L,X1,X2),
+	expr(X1, D1),
+	[H|T]=chop(X2),
+	rel_op(H,Op),
+	expr(trim(T), D2) =>
+	token_position(L,P),
+	Z=$condition(P,$rel_op(Op, D1, D2)).
+
+%   {condition:D1} {logic_op:Op} {condition:D2} --> condition(P, logic_op(Op, D1, D2))
+condition(L,Z),
+	split(L,X1,X2),
+	condition(X1, D1),
+	[H|T]=chop(X2),
+	logic_op(H,Op),
+	condition(trim(T), D2) =>
+	token_position(L,P),
+	Z=$condition(P,$logic_op(Op, D1, D2)).
+
+%   If {condition:C} Then {condition:E1} --> condition_if(P,C,E1)
+condition(L,Z),
+	L=[H1,H2|T1],
+	token_identifier1(H1,'If'),
+	token_white(H2),
+	split(T1,L1,L2),
+	condition(chop(L1),C),
+	L2=[H3,H4,H5|T3],
+	token_white(H3),
+	token_identifier1(H4,'Then'),
+	token_white(H5),
+	condition(T3,E1) =>
+	token_position(L,P),
+	Z=$condition_if(P,C,E1).
+
+%   If {condition:C} Then {condition:E1} Else {condition:E2} --> condition_if(P,C,E1,E2)
+condition(L,Z),
+	L=[H1,H2|T1],
+	token_identifier1(H1,'If'),
+	token_white(H2),
+	split(T1,L1,L2),
+	condition(chop(L1),C),
+	L2=[H3,H4,H5|T3],
+	token_white(H3),
+	token_identifier1(H4,'Then'),
+	token_white(H5),
+	split(T3,L3,L4),
+	condition(L3,E1),
+	L4=[H6,H7,H8|T4],
+	token_white(H6),
+	token_identifier1(H7,'Else'),
+	token_white(H8),
+	condition(T4,E2) =>
+	token_position(L,P),
+	Z=$condition_if(P,C,E1,E2).
+
+%   ({expr:A}) --> A
+condition(L,Z),
+	L=[H|T],
+	token_open1(H),
+	TT=trim(T),
+	last(TT,R1,R2),
+	token_close1(R2),
+	expr(R1,ZZ) => Z=ZZ.
+
+%%
+% Comma seperated conditions:
+private
+
+%   {condition:E1}, {condition:E2}, {condition:E3}, ... --> E=[E1, E2, E3, ...]
+delimited_condition(X, Z), X=[] => Z=[].
+delimited_condition(X, Z), expr(X,D) => Z=[D].
+delimited_condition(X, Z),
+	split(X,X1, X2), condition(X1,H), [HL|TL]=chop(X2), token_symbols(HL,","), delimited_condition(trim(TL),T) => Z=[H|T].
+
+%%
+% Function Argument:
+private
+
+%   {data:D} --> D
+args(L,Z), data(L,D) => Z=D.
+
+%   {identifier1:V} --> D, D=var(P,V)
+args(L,Z), token_identifier1(L,V) => token_position(L,P), Z=$var(P,V).
+
+%   ({args:A}) --> A
+args(L,Z),
+	L=[H|T],
+	token_open1(H),
+	last(trim(T),R1,R2),
+	token_close1(R2),
+	args(R1,ZZ) => Z=ZZ.
+
+%%
+% Comma seperated arguments:
+private
+
+%   {args:D1}, {args:D2}, {args:D3}, ... --> D=[D1, D2, D3, ...]
+delimited_args(X, Z), X=[] => Z=[].
+delimited_args(X, Z), args(X,D) => Z=[D].
+delimited_args(X, Z),
+	split(X,X1, X2), args(X1,H), [HL|TL]=chop(X2), token_symbols(HL,","), delimited_args(trim(TL),T) => Z=[H|T].
+
+%%
+% Function/Condition Call:
+%  {Identifier1:N} ( {delimited_expr:A} ) --> call_def(name(P,N),A)
+call_def(L,Z),
+	L=[H1,H2|T1],
+	token_identifier1(H1,N),
+	token_open1(H2),
+	T2=trim(T1),
+	last(T2,R1,R2),
+	token_close1(R2) =>
+	token_position(L,P),
+	P=$pos(File,Num,_),
+	(
+		delimited_expr(R1, A),
+		Z=$call_def($name(P,N),A)
+	;
+		Z=$error2(File,Num,'Improper Call defination')
+	).
+
+
+%%
+% Binding templates:
+private
+
+%   {data:D} --> D
+template(L,Z), data(L,D) => Z=D.
+
+%   {identifier1:V} --> D, D=var(P,V)
+template(L,Z), token_identifier1(L,V) => token_position(L,P), Z=$var(P,V).
+
+%   [{template:D1}, {template:D2}, {template:D3}, ... ] --> binding_list(D), D=[D1, D2, D3, ...]
+template(L,Z),
+	L=[H|T],
+	split(T,X1,X2),
+	token_open3(H),
+	token_close3(chop(X2)),
+	delimited_template(chop(X1), D) =>
+	Z=$binding_list(D).
+
+%   {identifier0:N}({template:D1}, {template:D2}, {template:D3}, ... ) --> data_term($name(P,N),D), D=[D1, D2, D3, ...]
+template(L,Z),
+	L=[H1,H2|T],
+	TT=trim(T),
+	last(TT,R1,R2),
+	token_identifier0(H1,N),
+	token_open1(H2),
+	token_close1(R2),
+	delimited_template(R1, D) =>
+	token_position(L,P),
+	Z=$binding_term($var(P,N),D).
+
+%   ({template:A}) --> A
+template(L,Z),
+	L=[H|T],
+	token_open1(H),
+	TT=trim(T),
+	last(TT,R1,R2),
+	token_close1(R2),
+	template(R1,ZZ) => Z=ZZ.
+
+
+%%
+% Comma seperated binding elements:
+private
+
+%   {template:D1}, {template:D2}, {template:D3}, ... --> D=[D1, D2, D3, ...]
+delimited_template(X, Z), X=[] => Z=[].
+delimited_template(X, Z), template(X,D) => Z=[D].
+delimited_template(X, Z),
+	split(X,X1, X2), template(X1,H), [HL|TL]=chop(X2), token_symbols(HL,","), delimited_template(chop(TL),T) => Z=[H|T].
+
+%%
+% ----- Parse entire file -----
+parse_file(X) = Z =>
+	Y=[],
+	N=0,
+	foreach(I in X)
+		N:=N+1,
+		statement(I,J),
+		Y:=[J|Y]
+	end,
+	Z=reverse(Y).
+
+

@@ -1,0 +1,32 @@
+% ***********************************************************
+%    PRINTER: Print entire program into debug file
+% ***********************************************************
+
+class printer
+    open core, common, program
+
+predicates
+    main: (string Filename, program) procedure(i,i).
+end class printer
+
+
+implement printer
+    open core, common, program, file, list
+
+%class predicates
+
+clauses
+    main(Filename, Program):- 
+        OutFile = string::concat(string::trim(Filename), ".prn"),
+        try
+            OutputFile =outputStream_file::create(OutFile),
+            OutputFil:write(Program),
+            OutputFile:close()
+        catch _TraceId do
+            stdio::write("DEBUG : Unable to create "),
+            stdio::write(OutFile),
+            stdio::write("\n")
+        end try.
+
+end implement printer
+

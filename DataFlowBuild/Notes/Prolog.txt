@@ -1,0 +1,501 @@
+domain =
+
+    % position: Position to track tokens
+    position = position(string FileName, unit LineNo, uint Position).
+
+    % identifier0: String should be upper identifier
+    identifier = position * string // String should be upper identifier
+
+type identifier = position * string // String should be lower identifier
+
+// ______________________________________________________________________________________
+//   moduleIdentifier: Identifier to track items in modules
+type moduleIdentifier = 
+    | IdentifierThis of Identifier
+    | IdentifierThat of Identifier * Identifier
+
+// ______________________________________________________________________________________
+//   expr: Expression
+type expr = 
+    | ExprNumber of position * int64 // Number
+    | ExprString of position * string // String
+    | ExprBool of position * bool // String
+    | ExprList of position * expr list // List [1, 2, 3, ..]
+    | ExprTailList of position * expr list * expr // [1, 2, 3 | X]
+    | ExprVar of moduleIdentifier // Variable
+    | ExprTuple of position * expr list // {identifier}({expr} ...)
+    | ExprTerm of identifier * expr list
+    | ExprFunCall of moduleIdentifier * expr list // {identifier}({expr} ...)
+    | ExprRecord of position * Map<Identifier, expr>
+    | ExprMapCall of moduleIdentifier * expr
+    | ExprAdd of expr * expr // {expr1} + {expr2}
+    | ExprSub of expr * expr // {expr1} - {expr2}
+    | ExprMult of expr * expr // {expr1} * {expr2}
+    | ExprDiv of expr * expr // {expr1} / {expr2}
+    | ExprMod of expr * expr // {expr1} % {expr2}
+    | ExprConcat of expr * expr // String concatenation
+    | ExprJoin of expr * expr // {expr1} is head and {expr2} is tail
+    | ExprAddList of expr * expr // Adding two list
+    | ExprNegate of position * expr // -{expr}
+    | ExprIfThen of position * expr * expr // if {cond} then {expr1} else {expr2}
+    | ExprIfThenElse of position * expr * expr * expr // if {cond} then {expr1} else {expr2}
+    | ExprMemberCheck of expr * expr // {expr1} in {expr2}
+    | ExprAnd of expr * expr // {cond1} and {cond2}
+    | ExprOr of expr * expr // {cond1} or {cond2}
+    | ExprNot of position * expr // not {cond}
+    | ExprGtEq of expr * expr // {expr1} >= {expr2}
+    | ExprGt of expr * expr // {expr1} > {expr2}
+    | ExprLtEq of expr * expr // {expr1} <= {expr2}
+    | ExprLt of expr * expr // {expr1} < {expr2}
+    | ExprNotEq of expr * expr // {expr1} != {expr2}
+    | ExprEq of expr * expr // {expr1} = {expr2}
+
+// ______________________________________________________________________________________
+//   arg: Arguments to Predicate
+type arg = 
+    | ArgExpr of expr
+    | ArgIgnoreVar of Identifier
+    | ArgIgnore
+    | ArgOutput of expr
+
+// ______________________________________________________________________________________
+//   statement: Statement of a body
+type statement = 
+    | StatementIfThenElse of position * expr * block * block // if {cond} then {...} else {...}
+    | StatementIfThen of position * expr * block // if {cond} then {statement...}
+    | StatementUnify of position * expr * expr // {expr1} = {expr2}
+    | StatementYeild of position * expr // yeild {expr}
+    | StatementCall of position * moduleIdentifier * arg list // Predicate call
+    | StatementContinue of position * expr // continue {expr}
+    | StatementMember of position * expr * expr
+    | StatementAssert of position * expr // Assert {cond}
+    | StatementReturn of position * expr // Return {expr}
+    | StatementExport of position * expr * moduleIdentifier // Export {Identifier0} to {Identifier1}
+    | StatementExportKey of position * expr * moduleIdentifier * expr // Export {I0} to {Id} with {key}
+    | StatementSwitchNoDefault of position * expr * switchCase list // Switch cases, no default
+    | StatementSwitchDefault of position * expr * switchCase list * block // Switch cases
+    | StatementGenerate of position * expr * block // {expr} = Statement block with Yeild
+    | StatementLoopDef of position * expr * Identifier * expr * block // {expr} = Init ({expr})
+    | StatementStop of position // stop statement
+
+//   switchCase: Switch case for switch case
+and switchCase = expr * expr * block
+
+//   block: Program definations included in the source file
+and block = position * position * (statement list)
+
+// ______________________________________________________________________________________
+//   typedef: Types used to represent expressions
+type typeDef = 
+    | TypeUnion of union list
+    | TypeTuple of typeDef list
+    | TypeList of typeDef
+    | TypeRecord of Map<Identifier, typeDef>
+    | TypeReference of string * string
+    | Number
+    | String
+    | Bool
+    | Unknown
+
+//   union: Used to represent discrimated union
+and union = identifier * typeDef list
+
+//   record: Used to represent a record pair
+and record = Identifier * typeDef
+
+
+// ______________________________________________________________________________________
+//   eval: Evaluated Expression
+type eval = 
+    | EvalNumber of int64 // Number
+    | EvalString of string // String
+    | EvalBool of bool // String
+    | EvalList of value list // List [1, 2, 3, ..]
+    | EvalVar of Identifier // Variable
+    | EvalTuple of value list // {identifier}({expr} ...)
+    | EvalTerm of identifier * value list
+    | EvalRecord of Map<Identifier, value>
+
+//   value: Used to represent a type and eval pair
+and value = typeDef * eval
+
+
+// ______________________________________________________________________________________
+//   param: Functional paremet which could be typed or untyped
+type param = 
+    | ParamUntyped of Identifier
+    | ParamTyped of Identifier * typeDef
+
+// ______________________________________________________________________________________
+//   defination: Program definations included in the source file
+type defination = 
+    | DefineCond of Identifier * param list * block // Condition defination
+    | DefineFunc of Identifier * param list * block // Function defination
+    | DefinePred of Identifier * param list * block // Predicate defination
+    | DefineStart of block // Start Predicate defination
+    | DefineConst of param * expr // Constant of expr
+    | DefineVar of Identifier * typeDef // Variable of type Module Identifier
+    | DefineMap of Identifier * typeDef * typeDef // key, value type
+    | DefineArray of Identifier * typeDef // List of type Module Identifier
+    | DefineType of Identifier * typeDef // Types definations
+
+// ______________________________________________________________________________________
+//   defination: Program definations included in the source file
+type moduleDef = string * Identifier * defination list
+
+// ______________________________________________________________________________________
+//   defination: Program definations included in the source file
+type program = position * string * moduleDef list
+
+
+// ______________________________________________________________________________________
+//   defination: Program definations included in the source file
+type definationType = 
+    | DefConstant of value
+    | DefPredicate of param list * block // Predicate
+    | DefFunction of param list * block // Function
+    | DefCondition of param list * block // Condition
+    | DefSingleVar of typeDef // of Type 
+    | DefMapVar of typeDef * typeDef // Map with key type and value type
+    | DefListVar of typeDef
+    | DefType of typeDef
+
+// ______________________________________________________________________________________
+// defination: Program definations included in the source file
+type varBag = Map<string, value>
+
+// ______________________________________________________________________________________
+// unifyArge: Argument to Unify
+type unifyArg =
+| UnifyArgExpr of expr
+| UnifyArgValue of value
+
+// ______________________________________________________________________________________
+//   predResult: Result of Pred block ot statement evaluation
+type predResult = varBag list option
+
+// ______________________________________________________________________________________
+//   funcResult: Result of Function block ot statement evaluation
+type funcResult = 
+    | FuncResultVars of varBag // Should not happen in Block!
+    | FuncResultReturn of value
+
+// ______________________________________________________________________________________
+//   seqResult: Result of Generate block ot statement evaluation
+type seqResult = (value list) * ((varBag list) option) // Block will return value list
+
+// ______________________________________________________________________________________
+//   loopResult: Result of Generate block ot statement evaluation
+type loopResult = 
+    | LoopResultContinue of value
+    | LoopResultYield of value
+    | LoopResultVars of varBag
+
+
+
+
+
+
+
+(* _____________________ DEFINATIONS _____________________ *)
+
+
+type name = identifier list
+
+type pair = name * name (* Type , Name *)
+
+type case = name * pair list * string (* Union case : Name/Tag, Argument type, name, description *)
+
+type union = name * string * record list (* Name tag, Description, and case list *)
+
+type record = name * pair list * string (* Record type: Name/Tag, Argument type, name, description *)
+
+let desc = 0 (* ___________________________________ *)
+
+type position = { FileName: string; LineNo: int; Position: int; }
+
+type program = ( Target: string, Position: position, Modules: module list)
+
+type upperIdentifier = string * position (* First char is alpha, rest all alphanum *)
+
+type lowerIdentifier = string * position (* First char is alpha, rest all alphanum *)
+
+type module = upperIdentifier * defination list (* Name, Definations *)
+
+type defination = 
+    | DefinationFunction of upperIdentifier * param list * funcStatement list (* Function Name, Parameters, and body *)
+    | DefinationPredicate of upperIdentifier * param list * predStatement list (* Predicate Name, Parameters, and body *)
+    | DefinationStart of predStatement list (* Start Predicate defination *)
+    | DefinationConstant of param * expr (* Constant expression *)
+    | DefinationVar of var  (* Variable  *)
+    | DefinationMap of var * typeDef (* value and key type *)
+    | DefinationArray of var (* List of type Module Identifier *)
+    | DefinationType of upperIdentifier * typeDef (* Types definations *)
+
+type param = (* --- Shares the first two elemenst of var --- *)
+    | ParamTyped of typeDef * upperIdentifier (* Type, Name *)
+    | ParamUntyped of upperIdentifier (* Name only *) 
+    | ParamGeneric of upperIdentifier * upperIdentifier (* Tag, Name *)
+
+type var = 
+    | VarTyped of lowerIdentifier * upperIdentifier (* Type, Name *)
+    | VarUntyped of upperIdentifier (* Name only *)
+
+(*   moduleIdentifier: Identifier to track items in modules *)
+type moduleIdentifier = 
+    | ModuleIdentifierThis of upperIdentifier
+    | ModuleIdentifierThat of upperIdentifier * upperIdentifier
+
+(*   expr: Expression  *)
+type expr = 
+    | ExprNumber of position * int (* Number *)
+    | ExprString of position * string (* String *)
+    | ExprBool of position * bool (* #true / #false *)
+    | ExprList of position * expr list (* List [1, 2, 3, ..] *)
+    | ExprTailList of position * expr list * expr (* [1, 2, 3 | X] *)
+    | ExprVar of moduleIdentifier (* Variable *)
+    | ExprTuple of position * expr list (* {identifier}({expr} ...) *)
+    | ExprTerm of identifier * expr list
+    | ExprFunCall of moduleIdentifier * expr list (* {identifier}({expr} ...) *)
+    | ExprPredCall of moduleIdentifier * expr list (* {identifier}({expr} ...) *)
+    | ExprRecord of upperIdentifier * upperIdentifier
+    | ExprMapCall of moduleIdentifier * expr
+    | ExprAdd of expr * expr (* {expr1} + {expr2} *)
+    | ExprSub of expr * expr (* {expr1} - {expr2} *)
+    | ExprMult of expr * expr (* {expr1} * {expr2} *)
+    | ExprDiv of expr * expr (* {expr1} / {expr2} *)
+    | ExprMod of expr * expr (* {expr1} % {expr2} *)
+    | ExprConcat of expr * expr (* String concatenation *)
+    | ExprJoin of expr * expr (* {expr1} is head and {expr2} is tail *)
+    | ExprMerge of expr * expr (* Adding two list *)
+    | ExprNegate of position * expr (* -{expr} *)
+    | ExprIfThenElse of position * expr * expr * expr (* if {cond} then {expr1} else {expr2} *)
+    | ExprMemberCheck of expr * expr (* {expr1} in {expr2} *)
+    | ExprAnd of expr * expr (* {cond1} and {cond2} *)
+    | ExprOr of expr * expr (* {cond1} or {cond2} *)
+    | ExprNot of position * expr (* not {cond} *)
+    | ExprGtEq of expr * expr (* {expr1} >= {expr2} *)
+    | ExprGt of expr * expr (* {expr1} > {expr2} *) 
+    | ExprLtEq of expr * expr (* {expr1} <= {expr2} *)
+    | ExprLt of expr * expr (* {expr1} < {expr2} *)
+    | ExprNotEq of expr * expr (* {expr1} != {expr2} *)
+    | ExprEq of expr * expr (* {expr1} = {expr2} *)
+
+(*  predicate args: Arguments to Predicate *)
+type predArg = 
+    | PredArgExpr of expr
+    | PredArgIgnoreVar of Identifier
+    | PredArgIgnore
+    | PredArgOutput of expr
+
+(*   statement: Statement of a body *)
+ type statement = (* Z = func, pred, seq,  loop, ifFunc, ifPred, ifSeq, ifLoop *) 
+    | Z_StatementIfThen (* pred only *) of position * expr * if_Z_block (* if {cond} then {statement...} *)
+    | Z_StatementIfThenElse of position * expr * if_Z_Block * if_Z_Block (* if {cond} then {...} else {...} *)
+    | Z_StatementUnify of position * expr * expr (* {expr1} = {expr2} *)
+    //| Z_StatementYeild of position * expr (* yeild {expr} *)
+    | Z_StatementCall of (* pred only *) position * moduleIdentifier * arg list (* Predicate call *)
+    | Z_StatementContinue of position * expr (* continue {expr} *)
+    | Z_StatementMember of position * expr * expr
+    | Z_StatementAssert of position * expr (* Assert {cond} *)
+    | Z_StatementReturn of position * expr (* Return {expr} *)
+    | Z_StatementExport of position * expr * moduleIdentifier (* Export {Identifier0} to {Identifier1} *)
+    | Z_StatementExportKey of position * expr * moduleIdentifier * expr (* Export {I0} to {Id} with {key} *)
+    | Z_StatementSwitchNoDefault of position * expr * switchCase list (* Switch cases, no default *)
+    | Z_StatementSwitchDefault of position * expr * switchCase list * block (* Switch cases *)
+    | Z_StatementGenerate of position * expr * block (* {expr} = Statement block with Yeild *)
+    | Z_StatementLoopDef of position * expr * Identifier * expr * block (* {expr} = Init ({expr}) *)
+    | Z_StatementStop of position (* stop statement *)
+(*
+(*   switchCase: Switch case for switch case *)
+and switchCase = expr * expr * block
+
+(*   block: Program definations included in the source file *)
+(* and block = position * position * (statement list) *)
+
+(*   typedef: Types used to represent expressions *)
+type typeDef = 
+    | TypeUnion of union list
+    | TypeTuple of typeDef list
+    | TypeList of typeDef
+    | TypeRecord of Map<Identifier, typeDef>
+    | TypeReference of string * string
+    | Number
+    | String
+    | Bool
+    | Unknown
+
+(*   union: Used to represent discrimated union *)
+and union = identifier * typeDef list
+
+(*   record: Used to represent a record pair *)
+and record = Identifier * typeDef
+
+
+(*   eval: Evaluated Expression *)
+type eval = 
+    | EvalNumber of int64 (* Number  *)
+    | EvalString of string (* String *)
+    | EvalBool of bool (
+    | EvalList of value list (* List [1, 2, 3, ..] *)
+    | EvalVar of Identifier (* Variable *)
+    | EvalTuple of value list (* {identifier}({expr} ...) *)
+    | EvalTerm of identifier * value list
+    | EvalRecord of Map<Identifier, value>
+
+(*   value: Used to represent a type and eval pair *)
+and value = typeDef * eval
+
+
+(*   param: Functional paremet which could be typed or untyped *)
+type param = 
+    | ParamUntyped of Identifier
+    | ParamTyped of Identifier * typeDef
+
+(*   defination: Program definations included in the source file *)
+type defination = 
+    | DefineCond of Identifier * param list * block (* Condition defination *)
+    | DefineFunc of Identifier * param list * block (* Function defination *)
+    | DefinePred of Identifier * param list * block (* Predicate defination *)
+    | DefineStart of block (* Start Predicate defination *)
+    | DefineConst of param * expr (* Constant of expr *)
+    | DefineVar of Identifier * typeDef (* Variable of type Module Identifier *)
+    | DefineMap of Identifier * typeDef * typeDef (* key, value type *)
+    | DefineArray of Identifier * typeDef (* List of type Module Identifier *)
+    | DefineType of Identifier * typeDef (* Types definations *)
+
+(*   defination: Program definations included in the source file *)
+type moduleDef = string * Identifier * defination list
+
+(*   defination: Program definations included in the source file *)
+type program = position * string * moduleDef list
+
+
+(*   defination: Program definations included in the source file *)
+type definationType = 
+    | DefConstant of value
+    | DefPredicate of param list * block (* Predicate *)
+    | DefFunction of param list * block (* Function *)
+    | DefCondition of param list * block (* Condition *)
+    | DefSingleVar of typeDef (* of Type  *)
+    | DefMapVar of typeDef * typeDef (* Map with key type and value type *)
+    | DefListVar of typeDef
+    | DefType of typeDef
+
+(* defination: Program definations included in the source file *)
+type varBag = Map<string, value>
+
+(* unifyArge: Argument to Unify *)
+type unifyArg =
+| UnifyArgExpr of expr
+| UnifyArgValue of value
+
+(*   predResult: Result of Pred block ot statement evaluation *)
+type predResult = varBag list option
+
+(*   funcResult: Result of Function block ot statement evaluation *)
+type funcResult = 
+    | FuncResultVars of varBag (* Should not happen in Block! *)
+    | FuncResultReturn of value
+
+(*   seqResult: Result of Generate block ot statement evaluation *)
+type seqResult = (value list) * ((varBag list) option) (* Block will return value list *)
+
+(*   loopResult: Result of Generate block ot statement evaluation *)
+type loopResult = 
+    | LoopResultContinue of value
+    | LoopResultYield of value
+    | LoopResultVars of varBag *)
+
+% --------------- Class Parser ---------------
+
+class parser
+    open core, lexer
+
+domains
+
+    pair = pair(token, expr).
+
+    minorlist = pair*.
+
+    majorlist = minorlist*.
+
+    statement =
+        and_s(statement S1, statement S2) ;                 % S1 ; S2
+        if_then_else(cond C, statement S1, statement S2);   % if C then S1 else S2
+        if_then_s(cond C, statement S) ;                    % if C then S
+        if_then(cond C) ;                                   % if C then
+        else_s ;                                            % else
+        else_if(cond C) ;                                   % elseif C
+        feature(token N) ;                                  % feature N
+        extern(token V) ;                                   % extern V
+        var(token V, expr E) ;                              % var V = E
+        block_start ;                                       % [
+        block_or ;                                          % |
+        block_end ;                                         % ]
+        defcond(token, token*) ;                            % condition C(A1, A2, ...)
+        defun(token, token*) ;                              % function F(A1, A2, ...)
+        block_cond_start(cond) ;                            % [ condition =>
+        block_cond_or(cond) ;                               % | condition =>
+        assign(expr, expr) ;                                % expr = expr
+        condition(cond) ;                                   % condition
+        forloop(majorlist) ;                                % for(majorlist)
+        map(expr Z, majorlist) ;                            % Z = map(majorlist)
+        loop(expr E, token V, expr I, majorlist) ;          % E = loop(V=I: majorlist)
+        yeild(expr Z) ;                                     % yeild Z        
+        return(expr Z) ;                                    % return Z
+        stop ;                                              % stop
+        dummy.                                              % Error control
+
+    cond =
+        cond_if1(cond C, cond C1) ;                 % if C then C1
+        cond_if2(cond C, cond C1, cond C2) ;        % if C then C1 else C2
+        memchk(expr E1, expr E2) ;                  % E1 in E2
+        condcall(token N, expr* A) ;                % n(A1, A2, A3, ...)
+        cand(cond C1, cond C2) ;                    % C1 and C2
+        cor(cond C1, cond C2) ;                     % C1 or C2
+        cnot(cond C) ;                              % not(C)
+        ge(expr E1, expr E2) ;                      % E1 >= E2 -or- E1 => E2
+        gt(expr E1, expr E2) ;                      % E1 > E2
+        le(expr E1, expr E2) ;                      % E1 <= E2 -or- E1 =< E2
+        lt(expr E1, expr E2) ;                      % E1 < E2
+        ne(expr E1, expr E2) ;                      % E1 != E2
+        eq(expr E1, expr E2) ;                      % E1 = E2
+        condcall1(token N, expr* A) ;               % assert(N, A)
+        condcall2(expr E).                          % assert(E)
+
+    expr =
+        expr_if(cond C, expr E1, expr E2) ;         % if C then E1 else E2
+        number(token) ;                             % 1234
+        str(token) ;                                % "abcd..."
+        list(expr* A) ;                             % [A1, A2, A3, ...]
+        taillist(expr* A, expr T) ;                 % [A1, A2, A3, ... | T]
+        var(token) ;                                % X
+        unknown ;                                   % _X
+        term(token N, expr* A) ;                    % n(A1, A2, A3 ...)
+        funcall(token N, expr* A) ;                 % N(A1, A2, A3 ...)
+        add(expr E1, expr E2) ;                     % E1 + E2
+        sub(expr E1, expr E2) ;                     % E1 - E2
+        multiply(expr E1, expr E2) ;                % E1 * E2
+        divide(expr E1, expr E2) ;                  % E1 / E2
+        modulus(expr E1, expr E2) ;                 % E1 % E2
+        concat(expr E1, expr E2) ;                  % E1 & E2, string concatenation
+        join(expr H, expr T) ;                      % H ^ T, H is Head and T is Tail of a list
+        addlist(expr E1, expr E2) ;                 % E1 ++ E2, list concatenation
+        genlist(expr E1, expr E2) ;                 % E1 .. E2, generate a list from E1 to E2
+        univ(expr E1, expr E2) ;                    % E1 =.. E2 -- Shuld be moved to statement
+        negate(expr E) ;                            % -E
+        exprcall1(token N, expr A) ;                % call(N, A)
+        exprcall2(expr Z).                          % call(Z) -- should be removed
+
+
+     pstatement =
+        line(string File, unsigned LineNum, statement) ;
+        block(pstatement*) .
+
+
+predicates
+    main: (string Filename, lexer::tokenlist*, pstatement*) determ (i,i,o).
+
+end class parser
+

@@ -1,0 +1,62 @@
+% --------------- Class Common: Common Utilities ---------------
+
+#ifdef HEADER
+
+class common
+    open core
+domains
+    position = position(string FileName, unsigned Linenum, unsigned Position) ;
+    maybe{T} = yes(T) ; no.
+    pos{T} = pos(position, T).
+
+predicates
+    check: () determ.
+    syntaxError0: (string Filename, string Message) procedure (i,i).
+    syntaxError: (position, string Message) procedure (i,i).
+    runtimeError: (position, string Message) procedure (i,i).
+    designError: (string) procedure(i).
+    buildError: (string) procedure(i).
+    str2num: (char*) -> unsigned.
+    %bug: (position, string Message) procedure (i,i).
+    
+end class common
+
+#endif
+
+
+#ifdef SRC
+
+implement common
+    open core
+
+constants
+    dummyPosition = position(" ", 0, 0).
+
+class facts
+    err:unsigned :=0.
+
+clauses
+    check() :- err = 0, !.
+    check() :- err = 1, !, nl, write("    1 error is found!"), nl, nl, fail.
+    check() :- nl, write("    ", err, " errors is found!"), nl, nl, fail.
+
+    syntaxError0(F, M, B) :- err := err+1, write("Syntax Error ", F, " : ", M), nl.
+    syntaxError(position(F,L,P), M) :- err := err+1, write("Syntax Error ",F, "(", L, "," ,P, ") : ", M), nl.
+    runtimeError(position(F,L,P), M) :- write("Runtime Error ",F, "(", L, "," ,P, ") : ", M), nl, nl, program::exit(1).
+    buildError(position(F,L,P), M) :- err := err+1, write("Build Error ",F, "(", L, "," ,P, ") : ", M), nl.
+
+
+    str2num(L) = N :- if (L=[H|T]) then NN = string::getCharValue(H) - 48, N= NN + 10*str2num(T) else N=0 end if.
+
+    Will move writing into file here? XXXX
+    Move Reading the file here
+
+    let FilterOptions L = // TO DO: Convert to Tail recursive version
+        match L with
+        | [] -> []
+        | [H|T] -> let LL = (FilterOptions T) in match H with None -> LL | Some(X) -> X::LL
+
+
+end implement common
+
+#endif

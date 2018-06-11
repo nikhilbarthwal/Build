@@ -1,0 +1,5 @@
+dos2unix Generator/*.fs
+a2ps -r --columns=1 Generator/*.fs -f 8 -o source.ps
+ps2pdf source.ps
+rm -f source.ps
+

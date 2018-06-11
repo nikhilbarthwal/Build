@@ -1,0 +1,29 @@
+
+
+% --- Split List into fragments ---
+private
+split0(L,L1,L2) ?=> L=[H|T], L1=[H], not(T=[]), L2=T.
+split0(L,L1,L2) ?=> L=[H|T], split0(T, LL, L2), L1=[H|LL].
+
+split(L1,L2) ?=> L2=[L1].
+split(L1,L2) ?=> split0(L1, H, Z), split(Z,T), L2=[H|T].
+
+
+main ?=>
+	split([1,2,3,4,5],[X1,X2,X3]),
+	print(X1),nl,
+	print(X2),nl,
+	print(X3),nl,
+	print('-------'),nl,
+	fail.
+
+main ?=> true.
+
+f(X) = Y => Y=X+1.
+
+go =>
+	G=$test(56,f(5)),
+	print(G),
+	nl.
+
+

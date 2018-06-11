@@ -1,0 +1,96 @@
+% ***********************************************************
+%    PROGRAM: Program defination and parser
+% ***********************************************************
+
+class parser
+    open core
+
+domains
+
+    program = pos{def}*.
+
+    def =
+        defFunc(pos{string} Name, funcBody);
+        defPred(pos{string} Name, predBody*);
+        defRule(ruleBody);
+        defNameRule(pos{string} Name, pos{string}* Params, ruleBody*). // Multi blocks
+        defHead(pos{string} Name, unsigned); // Name, Arity
+        defConst(pos{string} Name, pos{constExpr});
+        // TO DO: Add Type here
+
+    predBody = (pos{predParam}* Params, pos{predStatement}* Body)
+    funcBody = (pos{string}* Params, pos{predStatement}* Body)
+    ruleBody = pos{ruleStatement}*
+    seqBody =  pos{seqStatement}*
+    
+    param = paramConst(pos{expr}); paramUnify(pos{expr}).
+    predParam = Ignore, Var (string) or const expr
+
+    [pred, rule, func, seq, loop] Statement =
+        [func, pred, seq, rule, loop] StatementIf(pos{expr} Condition, pos{X statement}* Body);
+        [func, pred, seq, rule, loop] StatementIfElse(pos{expr} Condition, pos{X statement}* BodyThen, pos{X statement}* BodyElse);
+        [pred, seq, rule] StatementUnify(pos{pattern} ExprLeft, pos{pattern} ExprRight);
+        [pred, seq, rule] StatementMember(pos{pattern} ExprLeft, pos{pattern} ExprRight);
+        [pred, seq, rule] StatementCall(pos{string} PredName, pos{param}*);
+        [pred, seq, rule] StatementAssert(pos{data});
+        [pred, seq, rule] Statement Member // TO DO: Proper syntax
+        [func, loop] StatementReturn(pos{expr});
+        [loop] StatementContinue(pos{expr});
+        [seq] StatementYield(pos{expr});
+        [seq] StatementYieldAll(pos{expr});
+        [pred, seq, rule] StatementStop;
+        [rule] StatementCall(pos{string} PredName, pos{expr}*);
+        [pred] StatementCall(pos{string} PredName, pos{pattern}*);
+        [rule] StatementDesignError(pos{expr})
+        [rule] StatementFileGenerate(pos{expr}, pos{expr}) // Name, Contents
+        %statementContinue(pos{expr}); % Only for Loop, now defunct
+
+    unionData = unionDataTag(pos({string})) ; unionDataInfo(expr). // string should me small
+    unionExpr = unionExprTag(pos({string})) ; unionExprInfo(expr). // string should me small
+    unionPattern = unionExprTag(pos({string})) ; unionExprInfo(expr). // string should me small
+
+    [expr, pattern, const] Data =
+        [data, pattern, expr] ExprIf(pos{expr} Condition, pos{expr}* then, pos{expr}* else);
+        [data, pattern, expr] ExprStr(pos{string});
+        [data, pattern, expr] ExprNum(pos{integer});
+        [data, pattern, expr] ExprBool(pos{bool});
+        [data, pattern, expr] ExprNegate(pos{expr});
+        [data, pattern, expr] ExprUnion(unionSym{expr}*);
+        [pattern, expr] ExprVar(pos{string});
+        [pattern] ExprIgnore(pos{string}); // ************ ONLY PATTERN
+        [pattern, expr] ExprCall(pos{string},pos{expr}*). % Function Call // For Pattern it will remains expr
+        [data, pattern, expr]  ExprFunc(pos{pos{string}* Params, funcBody); % Functional type data
+        [data, pattern, expr]  ExprPredFunc(pos{pos{string}* Params, predBody); % Predicate type data
+        [data, pattern, expr]  ExprOp(operation, pos{expr},pos{expr}).
+        [seq] ExprSeq(seqBody)
+        //TO DO: Add one for Type
+
+        // For Pattern it will remains expr
+        [pattern, expr]% exprAdd(pos{expr}*);
+        [pattern, expr]% exprSub(pos{expr},pos{expr});
+        [pattern, expr]% exprMult(pos{expr}*);
+        [pattern, expr]% exprDivide(pos{expr},pos{expr});
+        [pattern, expr]% exprMod(pos{expr},pos{expr});
+        [pattern, expr]% exprAppend(pos{expr},pos{expr}); // List Apend
+        [pattern, expr]% exprEq(pos{expr},pos{expr});
+        [pattern, expr]% exprNeq(pos{expr},pos{expr});
+        [pattern, expr]% exprGt(pos{expr},pos{expr});
+        [pattern, expr]% exprLt(pos{expr},pos{expr});
+        [pattern, expr]% exprGe(pos{expr},pos{expr});
+        [pattern, expr]% exprLe(pos{expr},pos{expr});
+        [pattern, expr]% exprAnd(pos{expr},pos{expr});
+        [pattern, expr]% exprOr(pos{expr},pos{expr});
+        [pattern, expr]% exprNot(pos{expr},pos{expr});
+        [pattern, expr]% exprIn(pos{expr}, pos{expr}).
+
+    // operation = opAdd, opSub, opMult, opDiv, opAppend, opEq, opNeq, opGt, opGe, opLt, opLe, opAnd, opOr, opNot, opIn
+
+
+
+predicates
+
+    main: (string Filename, elements) -> program :: Function
+
+end class parser
+
+

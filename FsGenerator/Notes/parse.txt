@@ -1,0 +1,354 @@
+% ***********************************************************
+%    PARSER: Parser File into Tokens
+% ***********************************************************
+
+class parser
+    open core, common
+
+domains
+    token =
+        tokenIdentifier0(string);
+        tokenIdentifier1(string);
+        tokenString(string);
+        tokenFile(string);
+        tokenNumber(integer);
+        tokenSymbols(string);
+        tokenOpen(parathesis);
+        tokenClose(parathesis).
+
+    element =
+        elementList(parathesis, elements);
+        elementIdentifier0(string);
+        elementIdentifier1(string);
+        elementString(string);
+        elementNumber(integer);
+        elementSymbols(string).
+
+    elements = pos{element}*
+
+    paranthesis = curly, braces, square 
+
+predicates
+    main: (string Filename) -> elements.
+
+end class parser
+
+
+________________________________________________________________________________________________________________________________
+
+
+implement lexer
+    open core, common %, file, list
+
+constants
+    commentChar =';'.
+    stringChar = '\"'.
+    fileCharOpen = '{',
+    fileCharClose = '}'.
+
+class facts
+    filename:string := "".
+    linenum:unsigned := 0.
+    pos:unsigned := 0.
+    charlist:char* := [].
+
+class predicates
+
+    excessTokens: (token*) determ (i).
+    structTokens(string Filename, token* InTokens, element* InElements, tokens* OutTokens, element* OutElements) determ(i,i,o,o).
+    readTokens: (position, string FileName, element) determ (i,i,o)
+    tokenize: (token*) -> token*. % Convert Charlist to Tokens
+    
+    isSymbol: (char) determ (i).
+    %isAnything: (char) determ (i).
+    isDigit: (char) determ (i).
+    isWhite: (char) determ (i).
+    isAlphanum: (char) determ (i).
+    isAlpha: (char) determ (i).
+    isLower: (char) determ (i).
+    isUpper: (char) determ (i).
+
+    readWhite: () procedure.
+    readComments: () procedure.
+    readDigits: () -> char*.
+    readAlphanum: () -> char*.
+    readSymbols: () -> char*.
+    readString: (char) -> char*.
+    readComment: () procedure.
+
+    
+
+#ifdef DEBUG
+    debugLexer: (string, element) procedure.  %%% DEBUG %%%
+    debugPrint: (stdio::file, string, element) determ(i,i,i).  %%% DEBUG %%%
+#endif
+
+clauses
+
+#ifdef DEBUG
+    main(F,Z):- readTokens(dummyPosition, F, Z), debugLexer(F,Z). %%% DEBUG %%%
+#else
+    main(F,Z):- readTokens(dummyPosition, F, Z).
+#endif
+
+    readTokens(Position, Filename, Output) :-
+        filename := string::trim(Filename),
+        linenum := 1,
+        position := 1,
+        charlist := [],
+        try
+            F = file::readString(filename),
+            charlist := string::toCharList(string::trim(F)),
+            [H|T] = tokenize([]),
+            if (H=tokenOpen(P)) then
+                structTokens(filename,T,[], TT, Z),
+                excessTokens(TT),
+                Output = elementList(P, Z)
+            elseif (H=tokenOpenQ(P))
+                structTokens(T,[], TT, Z),
+                excessToken(TT),
+                Output = elementListQ(P, Z)
+            else
+                error0(filename, "File should start with ( or \'(", false), fail
+            end if
+
+        catch _TraceId do
+            Message = "Unable to read file" + filename
+            if (Position = dummyPosition) then error0(filename, Message, true) else error(Position, Message, false) end if,
+            fail
+
+        end try.
+
+    excessTokens([]) :- !.
+    excessTokens([tokenIdentifier0(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenIidentifier1(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenIdentifier0Q(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenIdentifier1Q(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenString(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenFile(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenNumber(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenSymbols(_,P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenOpen(P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenOpenQ(P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+    excessTokens([tokenClose(P)|_]) :- !, error(P, "Excess tokens, Not sure what to do"), fail.
+
+    structTokens(F, [], _, _, _) :- !, error::error0(Filename, "Unexpected end of file"), fail.
+    structTokens(F, [tokenFile(FF, P)|T0], L0, T, L) :- if (readTokens(P, FF, E)) then L1= [E|L0] else L1=L0 endif,  structTokens(F, T0, L1, T, L), !.
+    structTokens(_F, [tokenClose(_P)|T0], L, T0, L) :- !.
+    structTokens(F, [tokenIdentifier0(S, P)|T0], L0, T, L) :- L1 = [elementIdentifier0(S, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenIdentifier0Q(S, P)|T0], L0, T, L) :- L1 = [elementIdentifier0Q(S, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenIdentifier1(S, P)|T0], L0, T, L) :- L1 = [elementIdentifier1(S, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenIdentifier1Q(S, P)|T0], L0, T, L) :- L1 = [elementIdentifier1Q(S, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenString(S, P)|T0], L0, T, L) :- L1 = [elementString(S, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenNumber(N, P)|T0], L0, T, L) :- L1 = [elementNumber(N, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenSymbols(S, P)|T0], L0, T, L) :- L1 = [elementSymbols(S, P)|L0], structTokens(F, T0, L1, T, L), !.
+    structTokens(F, [tokenOpen(P)|T0], L0, T, L) :- structTokens(F, T0, [], T1, E), L1 = [elementList(P,E)|L0], structTokens(F, T1, L1, T, L), !.
+    structTokens(F, [tokenOpenQ(P)|T0], L0, T, L) :- structTokens(F, T0, [], T1, E), L1 = [elementListQ(P,E)|L0], structTokens(F, T1, L1, T, L), !.
+
+    tokenize(X) = Z :-
+
+        if (charlist = [H|L]) then
+
+            if (isWhite(H)) then
+                readWhite(),
+                Y = X
+
+            elseif (H = '\n') then
+                charlist := L,
+                Y = X,
+                linenum := linenum +1,
+                pos := 1
+
+            elseif (H = comment_char) then
+                readComment();
+
+            elseif (H = '(') then
+                charlist := L,
+                Y = [tokenOpen(position(filename, linenum, pos)|X],
+                pos := pos + 1
+
+            elseif (H = ')') then
+                charlist := L,
+                Y = [tokenClose(position(filename, linenum, pos)|X], pos := pos + 1
+
+            elseif (H = fileCharOpen) then
+                P = pos,
+                pos := pos + 1,
+                charlist := L,
+                S = readString(fileCharClose),
+                Y =  [tokenFile(string::createFromCharList(S), position(filename, linenum, P)|X]
+
+            elseif (isDigit(H)) then
+                Digits = readDigits(),
+                Num = str2num(list::reverse(Digits)),
+                Y =  [tokenNumber(Num, position(filename, linenum, pos))|X],
+                pos := pos + list::length(Digits)
+
+            elseif (isLower(H)) then
+                S = readAlphanum(),
+                Y =  [tokenIdentifier0(string::createFromCharList(S), position(filename, linenum, pos))|X],
+                pos := pos + list::length(S)
+
+            elseif (isUpper(H)) then
+                S = readAlphanum(),
+                Y =  [tokenIdentifier1(string::createFromCharList(S), filename, linenum, position)|X],
+                pos := pos + list::length(S)
+
+            elseif (H = string_char) then
+                P = pos,
+                pos := pos + 1,
+                charlist := L,
+                S = readString(string_char),
+                Y =  [tokenString(string::createFromCharList(S), position(filename, linenum, P)|X]
+
+            elseif (isSymbol(H))
+                S = readSymbols(),
+                Y =  [tokenSymbols(string::createFromCharList(S), position(filename, linenum, pos))|X],
+                pos := pos + list::length(S)
+            
+            elseif (H='\'')
+                pos := pos + 1,
+                charlist := L,
+                if (L=[HH|TT]) then
+                    if (isLower(HH)) then
+                        S = readAlphanum(),
+                        Y =  [tokenIdentifier0Q(string::createFromCharList(S), position(filename, linenum, pos))|X],
+                        pos := pos + list::length(S)
+
+                    elseif (isUpper(HH)) then
+                        S = readAlphanum(),
+                        Y =  [tokenIdentifier1Q(string::createFromCharList(S), filename, linenum, position)|X],
+                        pos := pos + list::length(S)
+
+                    elseif (HH = '(') then
+                        charlist := TT,
+                        Y = [tokenOpenQ(position(filename, linenum, pos)|X],
+                        pos := pos + 1
+
+                    else
+                        Error(position(filename, linenum, pos), "Misplaced quotation, ignoring", false),
+                        Y=X    
+
+                    endif
+                else
+                    Error(position(filename, linenum, pos), "Unexpected end of file", false),
+                    Y=X    
+                end if
+
+            else
+                Error(position(filename, linenum, pos), "Unexpected Character, ignoring", false),
+                Y=X
+            end if,
+
+            Z = tokenize(Y)
+        else
+            Z = list::reverse(X)
+        end if.
+
+
+    readWhite() :-
+        if (charlist = [H|T]) then
+            if (isWhite(H)) then charlist := T, position := position + 1, trimWhite() end if
+            if (H = '\n') then charlist := T, position := 1, line := line +1, trimWhite() end if
+        end if.
+
+    readComment() :- if ((charlist = [H|T]) and (H != '\n')) then charlist := T, position := position + 1, readComment() end if.
+
+    readDigits() = N :- if ((charlist = [H|T]) and (isDigit(H))) then charlist := T, N = [H|readDigits()] else N = [] end if.
+
+    readString(C) = N :-
+        if (charlist = [H|T]) then
+            charlist := T,
+            position := position +1,
+            if (H = C) then
+                N = []
+            elseif (H = '\n') then
+                N = [],
+                error(position(filename, linenum, position-1), "Abnormal Termination of String"),
+                linenum := linenum + 1,
+                position := 1
+            elseif (H = '\\') then
+                position := position + 1,
+                if (T = [HH|TT]) then
+                    charlist := TT,
+                    if (HH = '\\') then
+                        N = ['\\'|readString()]
+                    elseif (HH = 'n') then
+                        N = ['\n'|readString()]
+                    elseif (HH = '\"') then
+                        N = ['\"'|readString()]
+                    elseif (HH = '\'') then
+                        N = ['\''|readString()]
+                    elseif (HH = 't') then
+                        N = ['\t'|readString()]
+                    else
+                        error(position(filename, linenum, position-1), "Unable to understand the escape sequence"),
+                        N = readString()
+                    end if
+                else
+                    N = [],
+                    error(position(filename, linenum, position-1), "Abnormal End of File")
+                end if
+            else
+                N = [H|readString()]
+            end if
+        else
+            N = [],
+            error(position(filename, linenum, position), "Abnormal End of File")
+        end if.
+
+    readAlphanum() = N :-
+        if (charlist = [H|T]) and (isAlphanum(H)) then
+            charlist := T,
+            N = [H|readAlphanum()]
+        else
+            N = []
+        end if.
+
+    readSymbols() = N :-
+         if ((charlist = [H|T]) and (isSymbol(H))) then
+            charlist := T,
+            N = [H|readSymbols()]
+         else
+            N = []
+         end if.
+
+
+#ifdef DEBUG
+    debugLexer(Filename, Z) :- %%% DEBUG %%%
+        OutFile = string::concat(string::trim(Filename), ".lex"),
+        try
+            OutputFile =outputStream_file::create(OutFile),
+            if (debugPrint(OutputFile, "", E)) then true endif,
+            OutputFile:close()
+        catch _TraceId do
+            stdio::write("DEBUG : Unable to create "),
+            stdio::write(OutFile),
+            stdio::write("\n")
+        end try.
+
+    %%% DEBUG %%%
+    debugPrint(Out, T, elementList(P, E)) :- Out::write(T,"List ",P), TT=T+" ", foreach X = list::getMember_nd(E) do debugPrint(Out, TT, X) end,!. 
+    debugPrint(Out, T, elementListQ(P, E) :- Out::write(T,"List ",P), TT=T+" ", foreach X = list::getMember_nd(E) do debugPrint(Out, TT, X) end,!.
+    debugPrint(Out, T, E) :- Out::write(T,E), !.
+#endif
+
+    isSymbol(C) :- list::isMember(C, ['+', '-', '*']).
+
+    isAlphanum(C) :- isAlpha(C), !.
+    isAlphanum(C) :- isDigit(C), !.
+    isAlphanum('_') :- !.
+
+    isAlpha(C) :- isLower(C), !.
+    isAlpha(C) :- isUpper(C), !.
+
+    isWhite(C) :- list::isMember(C, [' ', '\r', '\t']).
+
+    isDigit(C) :- list::isMember(C, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']).
+
+    isLower(C) :- list::isMember(C, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']).
+
+    isUpper(C) :- list::isMember(C, ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']).
+
+end implement lexer
+

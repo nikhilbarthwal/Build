@@ -1,0 +1,177 @@
+%
+% ******************** PARSE: Error control for Read ******************** 
+%
+% Identifier
+% Number
+% String
+% List
+% Data
+% Variable
+% Header
+% Call
+% Memebership
+% Expression:
+% Condition:
+% Filename:
+% Module:
+% Statement:
+% PStatement:
+%
+% ******************** READ: Extract info from Tokens ******************** 
+%
+%
+% ----- Identifier ----- 
+%
+% Identifier --> identifier(Value, Token)
+%
+% ----- Identifier List -----
+%
+% Identifier List: I1 I2 I3 ..  --> [ I1, I2, I2 .. ]
+%
+% ----- Number -----
+%
+% +xxxxx --> num(Value, Token)
+% -xxxxx --> num(Value, Token)
+% xxxxx --> num(Value, Token)
+% xxx.xxx --> num(Value, Token)
+%
+% ----- String -----
+%
+% "xx xx xx" --> str(Value, Token)
+%
+% ----- List -----
+%
+% [data1 data2 data3] --> list(Value, Token)
+%
+% ----- Data -----
+%
+% Data: String / List / Number
+%
+% ----- Variable -----
+%
+% Identifier --> variable(Name, Token)
+% "a b c" --> str(Name, Token)
+%
+% ----- Variable List -----
+%
+% V1 V2 V3 --> [V1 V2 V3]
+%
+% ----- Header -----
+%
+% name(x y z) : a b c --> header(Name, I, O)
+% name(x y z) --> header(Name, I, 0)
+%
+% ----- FCall -----
+%
+% {module.}name(exp1 exp2 exp3) --> fcall(V, E, 0)         E is the expression List
+% name(exp1 exp2 exp3) --> fcall(Name, E, R)     
+% module.name(exp1 exp2 exp3) --> fcall( (Module, Name), E, R)     
+%
+% ----- Expression List -----
+%
+% exp1 exp2 exp3 --> [ ]
+%
+% ----- Major List -----
+%
+% MinorList1 ; MinorList2 ; MinorList3  --> [ M1 M2 M3]
+%
+% ----- Minor List -----
+%
+% Membership1 ; Membership2 ; Membership3  --> [ M1 M2 M3]
+%
+% ----- Membership -----
+%
+% Var in List --> mem(Var, List, Token)
+%
+% ----- Expression -----
+%
+% if Condition then Expression else Expression --> expr_if(Cond, Exp1, Exp2)
+% Exp1 + Exp2 --> add(Exp1, Exp2)
+% Exp1 - Exp2 --> sum(Exp1, Exp2)
+% Exp1 * Exp2 --> multiply(Exp1, Exp2)
+% Exp1 / Exp2 --> divide(Exp1, Exp2)
+% Exp1 // Exp2 --> int_divide(Exp1, Exp2)
+% Exp1 % Exp2 --> modulus(Exp1, Exp2)
+% Exp1 ^ Exp2 --> concat(Exp1, Exp2)
+% Exp1 & Exp2 --> join(Exp1, Exp2)
+% Exp1 ++ Exp2 --> add_list(Exp1, Exp2)
+% Exp1 .. Exp2 --> gen(Exp1, Exp2)
+% map[ MajorList : Expr ?-  Cond ] --> map2(MajorList, Expr, Cond)
+% map[ MajorList : Expression ] --> map1(MajorList, Expr)
+% { Expression }
+% Call: fcall(N, I, 0)
+% Variable --> variable(Name)
+% List or Number
+% (Expression) --> Expression
+%
+% ----- Condition -----
+%
+% Membership
+% if C1 then C2 --> cond_if1(C1, C2)
+% if C1 then C2 else C3 --> cond_if2(C1, C2, C2)
+% A and B --> and(A, B)
+% A or B --> or(A, B)
+% A < B --> lt(A, B)
+% A > B --> gt(A, B)
+% A => B --> ge(A, B)
+% A >= B --> ge(A, B)
+% A <= B --> le(A, B)
+% A =< B --> le(A, B)
+% A = B --> eq(A, B)
+% A != B --> ne(A, B)
+% Condition Call
+% not(C) --> inverse(C)
+% (C) --> C
+%
+% ----- Location -----
+%
+% [ var1 var2 var3 ] --> [var1, va2 , var3]
+%
+% ----- Statement -----
+%
+% [ --> begin(Token)
+% ] --> end(Token)
+% | --> alt(Token)
+% Function Header --> def_func(Name, Input, Ouput)
+% Condition {Header:Name( Inp1 Inp2 .. )} --> def_cond(Name, Input)
+% Export {Variable:V} : {Expression:e} --> def_export(V, E)
+% Import {Variable:V1} : {Variable:V2} --> def_import(V1 V2)
+% Component header --> def_component(Name, Input, Ouput)
+%Compose header -->  def_compose(Name, Input, Ouput)
+%-Header --> def_slot(Name, Input, Output)
+%+Header --> def_multislot(Name, Input, Output)
+% Statement1 | Statement2 --> statement_or(Statement1, Statement2)
+% Statement1 ; Statement2 --> statement_and(Statement1, Statement2)
+% component {Identifier:X} : {Identifier:Y} --> component(X, Y)
+% component {Identifier:Z} : {Identifier:X}.{Identifier:Y} --> component(Z,(X, Y))
+% Identifier.SimpleHeader <+> SimpleHeader --> multibind(Parent, Slot, Child, I1, I2)
+% Identifier.SimpleHeader <-> SimpleHeader --> bind(Parent, Slot, Child, I1, I2)
+% Member
+% else --> else
+% if Condition then  --> if_(C)
+% if Condition then Statement --> if_then(C, S)
+% if Condition then Statement  else Statement --> if_then_else(C, T, E)
+% Var := Expression --> set(V, E)
+% while Condition --> while1(C)
+% while (Condition) Statement --> while2(C, S)
+% do --> do
+% for( List ) --> for1( List)
+% for( List ) Statement  -> for2(List, Statement)
+% Condition: fcall(N, I, 0)
+% Module Name --> def_module(V)
+% Build Name --> build(Name)
+% file FileName in Location : Call --> bfile(FileName, Header, Location)
+% copy FileName in Location : copy(FileName) --> filecopy(FileName, CopyName, Location)
+% folder variable in Location -->  bfolder(Name, Location)
+% include variable in Location --> binclude(Name, Location)
+%
+% ******************** PROJECT STATEMENTS ******************** 
+%
+% Prayog {Identifier:Name} --> prayog(Name)     The first line of the project, Identifies which build is to be build
+% [ --> Begin(H)
+% ] --> End(H)
+% | --> Alt(H)
+% Target Identifier --> target(V)
+% include "FileName" --> pinclude(Filename)
+% {Identifier:V} <- {Data:D} --> set(V,D)
+% (Identifier:V} -> {Expression:E} --> report(V,E)

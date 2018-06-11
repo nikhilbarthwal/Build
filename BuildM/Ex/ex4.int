@@ -1,0 +1,5 @@
+:- module ex4.
+:- interface.
+:- import_module string.
+:- pred text(string).
+:- mode text((builtin.out)) is multi.

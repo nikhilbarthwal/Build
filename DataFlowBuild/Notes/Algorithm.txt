@@ -1,0 +1,43 @@
+_____________________
+
+      ALGORITHM
+_____________________
+
+(Main:
+	1. Read the main file
+	2. Tokenzie main file into Token List -> if error then stop
+	3. Read Sub Files -> Merge all into maskter token file
+	4. Tokens -> Structure: if error then stop
+	5. Structure get stored to Maps
+	6. Performance Sanity check on the file
+	7. Initialize all storage area
+	8. Start executing on start predicates - 2 modes: creation stage & connection stage
+	9. Data flow model sanity check
+)
+
+
+Procedure Execution Model:
+(
+	1. Start a new Var Bag
+	2. Initialize Var Bag
+	3. At each step: Could be non deterministic
+		i) Add a Var,
+		ii) Get a Var
+	4. Add to the store
+
+
+Type Class! - > type info, check if it belongs!, check valid type
+Var Class! - > add : check valid, 
+	see if it is standard, if yes - error or else already present
+
+Evals in various forms
+
+Start with each root components and eval the stings
+write the strings to file
+
+	
+
+
+(
+
+)

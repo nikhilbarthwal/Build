@@ -1,0 +1,21 @@
+% ***********************************************************
+%    VALIDATE: Validate all program definations
+% ***********************************************************
+
+class validate
+    open core, common
+
+predicates
+    main: (program) procedure 
+
+end class validate
+
+
+
+
+1. All Definations with arity are unique
+2. All Functions calls exists
+3. All Predicate calls exists
+4. All rule exports exists and have same cardinality
+5. All Types used exists
+

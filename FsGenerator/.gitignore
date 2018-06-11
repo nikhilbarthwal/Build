@@ -1,0 +1,9 @@
+*.exe
+*.exe.mdb
+*.suo
+*.xml
+*.class
+*.dll
+*.pdb
+Generator/obj/
+Target/

@@ -1,0 +1,50 @@
+_____________________
+
+      DATA
+_____________________
+
+
+	TypeDef type ::
+	
+		- Named type: int, char, string, [name], bool (Func, Fea)
+		- Struct: (typeDef Type, Identifier Name) list (Func, Fea)
+		- Tuple: (typeDef Type) list (Func, Fea)
+		- Generic Variable (Func)
+		- Type Function: identifier Name, typeDef list  Types(Func, Fea) //List: List(typeDef Type) & Option: Option(typeDef Type)
+		- Function: (typeDef list Inputs, typeDef Output) (XXX)
+		- Predictate: (typeDef list Inputs) (XXX)
+		- Component: (typeDef list Inputs, typeDef list Output) (Func, Fea)
+		- Component: interface name (Func, Fea)
+		- Map: key typeDef, value TypeDef (Func)
+
+Data Types:
+
+	- int: Primitive datatype as int64 signed
+
+	- string: essentially char list
+
+	- bool: ~true or ~false
+
+	- char: a characted (for now a 8bit one)
+
+	- type[]: list
+
+	- type<int,int,int:int>: Map with multiple keys but only one value
+
+	- type<<int,int:int>> : MultiMap
+
+	- type(type,type) : Function
+
+	- {Name:type ; Name:type } : Record
+
+	- Unions: Names need to be small
+			type Nikhil = ni(ui) ; nikhi ; ni
+
+
+
+Expressions:
+
+Types structure:
+
+
+

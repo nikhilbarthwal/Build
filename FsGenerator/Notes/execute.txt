@@ -1,0 +1,945 @@
+% ***********************************************************
+%    EXECUTE: Validate all program definations
+% ***********************************************************
+
+class execute
+    open core, common
+
+
+type state is Map(string Name, const Value)
+type states is state list
+
+type determResult = determResultReturn(const expr) ; determResultState(state) // For Func and Loop
+type sequenceResult = ((const expr) list, (state list) // For Sequence
+type predResult = state list
+
+let rec EvalLoopBlock (Var:state) (Block: funcStatement list) : determResult =
+
+let rec EvalFuncBlock (Var:state) (Block: funcStatement list) : determResult =
+    
+    match Block with
+    | [] -> State::[]
+    | [H|T] ->
+        match H with
+        | funcStatementIf((P,C), B) ->
+            let CC = EvalExpr(Var, C, P)
+            let b = match CC is
+                true
+                false
+                somethine else -> raise runtime error
+
+            if b then
+                match (EvalFuncBlocl Var B) with
+                | funcResultReturn(Result) -> funcResultReturn(Result)
+                | funcResultState(Var1) -> (EvalFuncBlock Var1 T)
+            else
+                (EvalFuncBlock Var T)
+
+        | funcStatementIf((P,C), B1, B2) ->
+            let CC = EvalExpr(Var, C, P)
+            let b = match CC is
+                true
+                false
+                somethine else -> raise runtime error
+
+            if b then
+                match (EvalFuncBlock Var B1) with
+                | funcResultReturn(Result) -> funcResultReturn(Result)
+                | funcResultState(Var1) -> (EvalFuncBlock Var1 T)
+            else
+                match (EvalFuncBlock Var B2) with
+                | funcResultReturn(Result) -> funcResultReturn(Result)
+                | funcResultState(Var1) -> (EvalFuncBlock Var1 T)
+
+        | StatementUnify((Pos1,Pat1), ->
+
+            Unify will have NoneDeterm or Determ
+
+
+
+        ExeFuncB
+    [pred, rule, func, seq, loop?] Statement =
+        [func, pred, seq, rule] 
+
+
+
+// ***********************************************************
+//    EXECUTE.FS: Execution engine for statements and block
+// ***********************************************************
+module Execute
+
+open Definations
+open Utilities
+
+let rec ExecuteBlockPred (vars : varBag) (name : string) ((pstart, pend, statements) : block) : predResult = 
+    match statements with
+    | h :: t -> 
+        match (ExecuteStatementPred vars name h) with
+        | Some(v) -> 
+            Some(List.map (fun x -> ExecuteBlockPred vars name (pstart, pend, t)) v
+                 |> FilterOptions
+                 |> List.concat)
+        | None -> None
+    | [] -> Some(vars :: [])
+
+and ExecuteBlockFunc (vars : varBag) (name : string) ((pstart, pend, statements) : block) (terminal : bool) : funcResult = 
+    match statements with
+    | h :: t -> 
+        match (ExecuteStatementFunc vars name h) with
+        | FuncResultVars(v) -> (ExecuteBlockFunc v name (pstart, pend, t) terminal)
+        | FuncResultReturn(v) -> FuncResultReturn(v)
+    | [] -> 
+        if terminal then Error.Execution pend "Unexpected end of Function block"
+        else FuncResultVars(vars)
+
+and ExecuteBlockLoop (vars : varBag) (name : string) (ty : typeDef) ((pstart, pend, statements) : block) 
+    (terminal : bool) : loopResult = 
+    match statements with
+    | h :: t -> 
+        match (ExecuteStatementLoop vars name ty h) with
+        | LoopResultVars(v) -> (ExecuteBlockLoop v name ty (pstart, pend, t) terminal)
+        | LoopResultContinue(v) -> LoopResultContinue(v)
+        | LoopResultYield(v) -> LoopResultYield(v)
+    | [] -> 
+        if terminal then Error.Execution pend "Unexpected end of Loop block"
+        else LoopResultVars(vars)
+
+and ExecuteBlockSeq (vars : varBag) (name : string) (ty : typeDef) ((pstart, pend, statements) : block) 
+    (terminal : bool) : seqResult = 
+    match statements with
+    | h :: t -> 
+        match (ExecuteStatementSeq vars name ty h) with
+        | (e, None) -> (e, None)
+        | (e, Some(v)) -> 
+            let res = List.map (fun x -> ExecuteBlockSeq x name ty (pstart, pend, t) terminal) v
+            let ee = List.concat (List.map fst res)
+            
+            let vv = 
+                res
+                |> List.map snd
+                |> FilterOptions
+                |> List.concat
+            if (vv = []) then (ee, None)
+            else (ee, Some(vv))
+    | [] -> 
+        if terminal then Error.Execution pend "Unexpected end of generate block"
+        else ([], Some(vars :: []))
+
+and ExecuteStatementPred (vars : varBag) (name : string) (s : statement) : predResult = 
+    (* EvalCondition (name : string) (v : varBag) (e : expr) : bool = 
+   UnifyExpr (name : string) (v : varBag) (e1 : expr) (e2 : expr)  : varBag option =
+   UnifyEval (name : string) (v : varBag) (e1 : eval) (e2 : eval)  : varBag option =
+   EvalExpr (name : string) (constant : bool) (v : varBag) (ground : bool) (e : expr) : position * value = *)
+
+    let evaluate = EvalExpr name false vars
+    let evalCondition = EvalCondition name vars
+    let addVar = Program.AddVar name
+    match s with
+    | StatementIfThenElse(_, c, s1, s2) -> 
+        if (evalCondition c) then (ExecuteBlockPred vars name s1)
+        else (ExecuteBlockPred vars name s2)
+    | StatementIfThen(_, c, s) -> 
+        if (evalCondition c) then (ExecuteBlockPred vars name s)
+        else Some(vars :: [])
+    | StatementUnify(p, e1, e2) -> 
+        match (UnifyExpr name p vars (UnifyArgExpr(e1)) (UnifyArgExpr(e2))) with
+        | None -> None
+        | Some(v) -> Some(v :: [])
+    | StatementMember(p, z, e) -> 
+        let (p2, f1) = (evaluate false e)
+        let (p2, f2) = (evaluate true e)
+        match f2 with
+        | (TypeList(t), EvalList(ev)) -> 
+            let el = List.map snd ev
+            if (MatchType t (fst f1)) then 
+                let res = 
+                    List.map (fun x -> UnifyExpr name p vars (UnifyArgValue(f1)) (UnifyArgValue(t, x))) el 
+                    |> FilterOptions
+                if (res = []) then None
+                else Some(res)
+            else Error.Execution p "Type mismatch here"
+        | (TypeList(_), _) -> Error.Bug p2 "This experssion says it is of type list, but the value is not"
+        | (_, EvalList(_)) -> Error.Bug p2 "This experssion says it is not of type list, but the value is"
+        | (_, _) -> Error.Execution p2 "This expression should evaluate to a list"
+    | StatementYeild(p, e) -> Error.Execution p "Misplaced yeild statement"
+    | StatementCall(_, predIdentifier, args) -> 
+        let (p, predName) = StripIdentifier predIdentifier
+        match (Program.GetDef name predIdentifier) with
+        | Some(DefPredicate(predArgs, predBlock)) -> 
+            if (args.Length <> predArgs.Length) then 
+                Error.Execution p "Mismatch in the number of arguments declared and used"
+            let matchList = List.zip args predArgs
+            
+            let folder0 (s : varBag) (x : arg * param) = 
+                match (fst x) with
+                | ArgExpr(e) -> 
+                    let (p, f) = evaluate true e
+                    match (snd x) with
+                    | ParamUntyped(y) -> addVar s y f
+                    | ParamTyped(y, t) -> 
+                        if (MatchType t (fst f)) then (addVar s y f)
+                        else Error.Execution p (sprintf "Type mismatch for variable argument %s" (snd y))
+                | _ -> s
+            
+            let newVars = List.fold folder0 Map.empty matchList
+            match (ExecuteBlockPred newVars name predBlock) with
+            | Some(vv) -> 
+                let folder1 (v : varBag) (init : varBag) (a, i : param) = 
+                    let ii = snd (GetIdentifier i)
+                    match a with
+                    | ArgOutput(e) -> 
+                        match (UnifyExpr name p init (UnifyArgExpr(e)) (UnifyArgValue(v.[ii]))) with
+                        | None -> Error.Execution (fst (GetIdentifier i)) "Expression should unify here"
+                        | Some(vvv) -> vvv
+                    | _ -> init
+                
+                let processVars (v : varBag) = List.fold (folder1 v) vars matchList
+                Some(List.map processVars vv)
+            | None -> None
+        | None -> Error.Execution p (sprintf "Could not find a Predicate %s" predName)
+        | _ -> Error.Execution p (sprintf "%s is not a Predicate" predName)
+    | StatementContinue(p, e) -> Error.Execution p "Misplaced continue statement"
+    | StatementAssert(p, c) -> 
+        if (evalCondition c) then Some(vars :: [])
+        else None
+    | StatementReturn(p, e) -> Error.Execution p "Misplaced return statement"
+    | StatementExport(p, e, m) -> 
+        let s = StripIdentifier m
+        let (t, f) = snd (evaluate true e)
+        match (Program.GetDef name m) with
+        | Some(DefSingleVar(tt)) -> 
+            if (MatchType t tt) then Store.AddSingleVar s (SplitIdentifier name m) f
+            else Error.Execution p (sprintf "Type mismatch when exporting to this store %s" (snd s))
+        | Some(DefListVar(tt)) -> Store.AddListVar s (SplitIdentifier name m) f
+        | Some(_) -> Error.Execution (fst s) (sprintf "Store %s should be a single or list type" (snd s))
+        | None -> (Error.Execution (fst s) "Store %s not found" (snd s))
+        Some(vars :: [])
+    | StatementExportKey(p, e, m, k) -> 
+        let s = StripIdentifier m
+        let (p1, (t1, f1)) = evaluate true e
+        let (p2, (t2, f2)) = evaluate true k
+        match (Program.GetDef name m) with
+        | Some(DefMapVar(tt1, tt2)) -> 
+            if (MatchType t1 tt1) then 
+                Error.Execution p1 (sprintf "Type mismatch in data when exporting to this store %s" (snd s))
+            if (MatchType t2 tt2) then 
+                Error.Execution p2 (sprintf "Type mismatch in key when exporting to this store %s" (snd s))
+            Store.AddMapVar s (SplitIdentifier name m) f2 f1
+        | Some(_) -> Error.Execution (fst s) (sprintf "Store %s should be a map type" (snd s))
+        | None -> (Error.Execution (fst s) "Store %s not found" (snd s))
+        Some(vars :: [])
+    | StatementSwitchNoDefault(_, ex, switchCaseList) -> 
+        let (p, f) = (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        
+        let filtered = List.filter (fun (v, c, blk) -> EvalCondition name v c) unified
+        let res = List.map (fun (v, _, blk) -> ExecuteBlockPred v name blk) filtered |> FilterOptions
+        
+        let peeled = 
+            List.fold (fun s (e, c, blk) -> 
+                match e with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) unified
+        if res = [] then None
+        else Some(List.concat res)
+    | StatementSwitchDefault(_, ex, switchCaseList, d) -> 
+        let (p, f) = (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        
+        let filtered = 
+            (vars, ExprBool(dummyPosition, true), d) 
+            :: (List.filter (fun (v, c, blk) -> EvalCondition name v c) unified)
+        let res = List.map (fun (v, _, blk) -> ExecuteBlockPred v name blk) filtered |> FilterOptions
+        
+        let peeled = 
+            List.fold (fun s (e, c, blk) -> 
+                match e with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) unified
+        if res = [] then None
+        else Some(List.concat res)
+    | StatementGenerate(_, ex, blk) -> 
+        let (p, f) = (evaluate false ex)
+        let res = fst (ExecuteBlockSeq vars name (fst f) blk true)
+        let unified = List.map (fun x -> UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(x))) res |> FilterOptions
+        if (unified = []) then None
+        else Some(unified)
+    | StatementLoopDef(p, ex, x, z, l) -> 
+        let f = snd (evaluate false ex)
+        let i = snd (evaluate true z)
+        
+        let rec loopEval (exp : value) : value = 
+            let v = (addVar vars x exp)
+            match (ExecuteBlockLoop v name (fst f) l true) with
+            | LoopResultContinue(y) -> (loopEval y)
+            | LoopResultYield(y) -> y
+            | _ -> Error.Bug p "loopEval function returned a vars table"
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(loopEval i))) with
+        | Some(v) -> Some(v :: [])
+        | None -> None
+    | StatementStop(p) -> None
+
+and ExecuteStatementFunc (vars : varBag) (name : string) (s : statement) : funcResult = 
+    let addVar = Program.AddVar name
+    let evaluate = EvalExpr name false vars
+    let evalCondition = EvalCondition name
+    match s with
+    | StatementIfThenElse(p, c, s1, s2) -> 
+        if (evalCondition vars c) then (ExecuteBlockFunc vars name s1 false)
+        else (ExecuteBlockFunc vars name s2 false)
+    | StatementIfThen(p, c, s) -> 
+        if (evalCondition vars c) then (ExecuteBlockFunc vars name s false)
+        else FuncResultVars(vars)
+    | StatementUnify(p, e1, e2) -> 
+        match (UnifyExpr name p vars (UnifyArgExpr(e1)) (UnifyArgExpr(e2))) with
+        | None -> Error.Execution p "Assignment operation cannot fail here"
+        | Some(v) -> FuncResultVars(v)
+    | StatementMember(p, _, _) -> Error.Execution p "Cannot have a non-deterministic assignment here"
+    | StatementYeild(p, e) -> Error.Execution p "Misplaced yeild statement"
+    | StatementCall(p, _, _) -> Error.Execution p "Predicate calls are not permitted insude function bodies"
+    | StatementContinue(p, e) -> Error.Execution p "Misplaced continue statement"
+    | StatementAssert(p, c) -> Error.Execution p "Misplaced assertion statement"
+    | StatementReturn(_, e) -> FuncResultReturn(snd (evaluate true e))
+    | StatementExport(p, _, _) -> Error.Execution p "Only Predicates can export data"
+    | StatementExportKey(p, _, _, _) -> Error.Execution p "Only Predicates can export data"
+    | StatementSwitchNoDefault(p, ex, switchCaseList) -> 
+        let f = snd (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        match (List.filter (fun (v, c, blk) -> EvalCondition name v c) unified) with
+        | (v, _, blk) :: t -> 
+            if (t = []) then (ExecuteBlockFunc v name blk false)
+            else Error.Execution p "Multiple matches not allowed here"
+        | [] -> FuncResultVars(vars)
+    | StatementSwitchDefault(p, ex, switchCaseList, d) -> // Only Func or Loop
+        let f = snd (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        match (List.filter (fun (v, c, blk) -> EvalCondition name v c) unified) with
+        | (v, _, blk) :: t -> 
+            if (t = []) then (ExecuteBlockFunc v name blk false)
+            else Error.Execution p "Multiple matches not allowed here"
+        | [] -> (ExecuteBlockFunc vars name d false)
+    | StatementGenerate(p, ex, blk) -> 
+        let f = snd (evaluate false ex)
+        let res = fst (ExecuteBlockSeq vars name (fst f) blk true)
+        let newEx = ((fst f), EvalList(res))
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(newEx))) with
+        | None -> Error.Execution p "Assignment cannot fail here"
+        | Some(v) -> FuncResultVars(v)
+    | StatementLoopDef(p, ex, x, z, l) -> 
+        let f = snd (evaluate false ex)
+        let i = snd (evaluate true z)
+        
+        let rec loopEval (exp : value) : value = 
+            let v = (addVar vars x exp)
+            match (ExecuteBlockLoop v name (fst f) l false) with
+            | LoopResultContinue(y) -> (loopEval y)
+            | LoopResultYield(y) -> y
+            | _ -> Error.Bug p "loopEval function returned a vars table"
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(loopEval i))) with
+        | None -> Error.Execution p "Assignment cannot fail here"
+        | Some(v) -> FuncResultVars(v)
+    | StatementStop(p) -> Error.Execution p "Stop statement cannot appear here"
+
+and ExecuteStatementLoop (vars : varBag) (name : string) (ty : typeDef) (s : statement) : loopResult = 
+    let addVar = Program.AddVar name
+    let evaluate = EvalExpr name false vars
+    let evalCondition = EvalCondition name
+    match s with
+    | StatementIfThenElse(p, c, s1, s2) -> 
+        if (evalCondition vars c) then (ExecuteBlockLoop vars name ty s1 false)
+        else (ExecuteBlockLoop vars name ty s2 false)
+    | StatementIfThen(p, c, s) -> 
+        if (evalCondition vars c) then (ExecuteBlockLoop vars name ty s false)
+        else LoopResultVars(vars)
+    | StatementUnify(p, e1, e2) -> 
+        match (UnifyExpr name p vars (UnifyArgExpr(e1)) (UnifyArgExpr(e2))) with
+        | None -> Error.Execution p "Assignment operation cannot fail here"
+        | Some(v) -> LoopResultVars(v)
+    | StatementMember(p, _, _) -> Error.Execution p "Cannot have a non-deterministic assignment here"
+    | StatementYeild(p, e) -> 
+        let f = snd (evaluate true e)
+        if not (MatchType ty (fst f)) then Error.Execution p "Cannot have a non-deterministic assignment here"
+        LoopResultYield(f)
+    | StatementCall(p, _, _) -> Error.Execution p "Predicate calls are not permitted insude function bodies"
+    | StatementContinue(p, e) -> 
+        let f = snd (evaluate true e)
+        if not (MatchType ty (fst f)) then Error.Execution p "Cannot have a non-deterministic assignment here"
+        LoopResultContinue(f)
+    | StatementAssert(p, c) -> Error.Execution p "Misplaced assertion statement"
+    | StatementReturn(p, _) -> Error.Execution p "Misplaced Return statement"
+    | StatementExport(p, _, _) -> Error.Execution p "Only Predicates can export data"
+    | StatementExportKey(p, _, _, _) -> Error.Execution p "Only Predicates can export data"
+    | StatementSwitchNoDefault(p, ex, switchCaseList) -> 
+        let f = snd (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        match (List.filter (fun (v, c, blk) -> EvalCondition name v c) unified) with
+        | (v, _, blk) :: t -> 
+            if (t = []) then (ExecuteBlockLoop v name ty blk false)
+            else Error.Execution p "Multiple matches not allowed here"
+        | [] -> LoopResultVars(vars)
+    | StatementSwitchDefault(p, ex, switchCaseList, d) -> // Only Func or Loop
+        let f = snd (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        match (List.filter (fun (v, c, blk) -> EvalCondition name v c) unified) with
+        | (v, _, blk) :: t -> 
+            if (t = []) then (ExecuteBlockLoop v name ty blk false)
+            else Error.Execution p "Multiple matches not allowed here"
+        | [] -> (ExecuteBlockLoop vars name ty d false)
+    | StatementGenerate(p, ex, blk) -> 
+        let (p, f) = (evaluate false ex)
+        let res = (ExecuteBlockSeq vars name (fst f) blk true)
+        let newEx = ((fst f), EvalList(fst res))
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(newEx))) with
+        | None -> Error.Execution p "Assignment cannot fail here"
+        | Some(v) -> LoopResultVars(v)
+    | StatementLoopDef(p, ex, x, z, l) -> 
+        let (p, f) = evaluate false ex
+        let i = snd (evaluate true z)
+        
+        let rec loopEval (exp : value) : value = 
+            let v = (addVar vars x exp)
+            match (ExecuteBlockLoop v name (fst f) l false) with
+            | LoopResultContinue(y) -> (loopEval y)
+            | LoopResultYield(y) -> y
+            | _ -> Error.Bug p "loopEval function returned a vars table"
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(loopEval i))) with
+        | None -> Error.Execution p "Assignment cannot fail here"
+        | Some(v) -> LoopResultVars(v)
+    | StatementStop(p) -> Error.Execution p "Stop statement cannot appear here"
+
+and ExecuteStatementSeq (vars : varBag) (name : string) (ty : typeDef) (s : statement) : seqResult = 
+    let evaluate = EvalExpr name false vars
+    let evalCondition = EvalCondition name vars
+    let addVar = Program.AddVar name
+    match s with
+    | StatementIfThenElse(_, c, s1, s2) -> 
+        if (evalCondition c) then (ExecuteBlockSeq vars name ty s1 false)
+        else (ExecuteBlockSeq vars name ty s2 false)
+    | StatementIfThen(_, c, s) -> 
+        if (evalCondition c) then (ExecuteBlockSeq vars name ty s false)
+        else ([], Some(vars :: []))
+    | StatementUnify(p, e1, e2) -> 
+        match (UnifyExpr name  p vars (UnifyArgExpr(e1)) (UnifyArgExpr(e2))) with
+        | None -> ([], None)
+        | Some(v) -> ([], Some(v :: []))
+    | StatementMember(p, z, e) -> 
+        let (p2, f1) = (evaluate false e)
+        let (p2, f2) = (evaluate true e)
+        match f2 with
+        | (TypeList(t), EvalList(el)) -> 
+            if (MatchType t (fst f1)) then 
+                let res = 
+                    List.map (fun x -> UnifyExpr name p vars (UnifyArgValue(f1)) (UnifyArgValue(t, x))) (List.map snd el)
+                    |> FilterOptions
+                if (res = []) then ([], None)
+                else ([], Some(res))
+            else Error.Execution p "Type mismatch here"
+        | (TypeList(_), _) -> Error.Bug p2 "This experssion says it is of type list, but the value is not"
+        | (_, EvalList(_)) -> Error.Bug p2 "This experssion says it is not of type list, but the value is"
+        | (_, _) -> Error.Execution p2 "This expression should evaluate to a list"
+    | StatementYeild(_, e) -> ((snd (evaluate true e)) :: [], None)
+    | StatementCall(p, _, _) -> Error.Execution p "Only Predicate can another predciate"
+    | StatementContinue(p, e) -> Error.Execution p "Misplaced continue statement"
+    | StatementAssert(p, c) -> 
+        if (evalCondition c) then ([], Some(vars :: []))
+        else ([], None)
+    | StatementReturn(p, e) -> Error.Execution p "Misplaced return statement"
+    | StatementExport(p, _, _) -> Error.Execution p "Only Predicates can export data"
+    | StatementExportKey(p, _, _, _) -> Error.Execution p "Only Predicates can export data"
+    | StatementSwitchNoDefault(p, ex, switchCaseList) -> 
+        let (p, f) = (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        
+        let filtered = List.filter (fun (v, c, blk) -> EvalCondition name v c) unified
+        let res = List.map (fun (v, _, blk) -> ExecuteBlockSeq v name ty blk false) filtered
+        let yields = List.map fst res |> List.concat
+        
+        let allVars = 
+            List.map snd res
+            |> FilterOptions
+            |> List.concat
+        if allVars = [] then (yields, None)
+        else (yields, Some(allVars))
+    | StatementSwitchDefault(p, ex, switchCaseList, d) -> 
+        let ev = ExecuteBlockSeq vars name ty d false
+        let (p, f) = (evaluate false ex)
+        
+        let unified = 
+            List.fold (fun s (e, c, blk) -> 
+                let u = (UnifyExpr name p vars (UnifyArgExpr(e)) (UnifyArgValue(f)))
+                match u with
+                | Some(v) -> (v, c, blk) :: s
+                | None -> s) [] switchCaseList
+        
+        let filtered = List.filter (fun (v, c, blk) -> EvalCondition name v c) unified
+        let res = List.map (fun (v, _, blk) -> ExecuteBlockSeq v name ty blk false) filtered
+        let yields = (fst ev) :: (List.map fst res) |> List.concat
+        
+        let allVars = 
+            List.map snd res
+            |> FilterOptions
+            |> List.concat
+        match (snd ev) with
+        | None -> 
+            if allVars = [] then (yields, None)
+            else (yields, Some(allVars))
+        | Some(vv) -> (yields, Some(List.append vv allVars))
+
+    | StatementGenerate(p, ex, blk) -> 
+        let f = snd (evaluate false ex)
+        let res = (ExecuteBlockSeq vars name (fst f) blk true)
+        if (snd res <> None) then Error.Bug p "Seqeunce block should never return var bag list"
+        let ff = EvalList(fst res)
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(fst f, ff))) with
+        | None -> ([], None)
+        | Some(v) -> ([], Some(v :: []))
+    | StatementLoopDef(p, ex, x, z, l) -> 
+        let f = snd (evaluate false ex)
+        let i = snd (evaluate true z)
+        
+        let rec loopEval (exp : value) : value = 
+            let v = (addVar vars x exp)
+            match (ExecuteBlockLoop v name (fst f) l true) with
+            | LoopResultContinue(y) -> (loopEval y)
+            | LoopResultYield(y) -> y
+            | _ -> Error.Bug p "loopEval function returned a vars table"
+        match (UnifyExpr name p vars (UnifyArgValue(f)) (UnifyArgValue(loopEval i))) with
+        | Some(v) -> ([], Some(v :: []))
+        | None -> ([], None)
+    | StatementStop(p) -> ([], None)
+
+and EvalCondition (name : string) (v : varBag) (e : expr) : bool = 
+    let (p, res) = (EvalExpr name false v true e)
+    match (snd res) with
+    | EvalBool(b) -> b
+    | _ -> Error.Execution p "Expression does not evaluate to boolean value"
+
+
+and EvalExpr (name : string) (constant : bool) (vars : varBag) (ground : bool) ((*ty:typeDef option*) e : expr) : position * value = 
+    
+    let eval = EvalExpr name constant vars ground
+    let evalGround = EvalExpr name constant vars true
+    let cond = EvalCondition name vars
+    
+    let checkType (t : typeDef) ((p : position), ((et, ev) : value)) = 
+        if not (MatchType t t) then Error.Execution p "Type mismatch"
+    match e with
+    | ExprNumber(p, n) -> (p, (Number, EvalNumber(n)))
+
+    | ExprString(p, s) -> (p, (String, EvalString(s)))
+
+    | ExprBool(p, b) -> (p, (Bool, EvalBool(b)))
+
+    | ExprList(p, l) -> 
+        let posvalues = List.map eval l
+        
+        let types = 
+            posvalues
+            |> List.map snd
+            |> List.map fst
+        
+        let evals = List.map snd posvalues
+        
+        let filterTypes = List.filter (fun x -> x <> Unknown) types
+        match filterTypes with
+        | h :: t -> 
+            if not (HomogeneousList filterTypes) then Error.Execution p "List has different types of elements"
+            (p, (h, EvalList(evals)))
+        | [] -> (p, (Unknown, EvalList(evals)))
+
+    | ExprAdd(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (f1, f2) with
+        | ((Number, EvalNumber(n1)), (Number, EvalNumber(n2))) -> (p1, (Number, EvalNumber(n1 + n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of + operator, should evaluate to a number"
+
+    | ExprSub(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (f1, f2) with
+        | ((Number, EvalNumber(n1)), (Number, EvalNumber(n2))) -> (p1, (Number, EvalNumber(n1 - n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of - operator, should evaluate to a number"
+
+    | ExprNegate(p, e) -> 
+        let f = snd (evalGround e)
+        match f with
+        | ((Number, EvalNumber(n))) -> (p, (Number, EvalNumber(-1L * n)))
+        | (_, _) -> Error.Execution p "Expressions on both side of - operator, should evaluate to a number"
+    | ExprMult(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (f1, f2) with
+        | ((Number, EvalNumber(n1)), (Number, EvalNumber(n2))) -> (p1, (Number, EvalNumber(n1 * n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of * operator, should evaluate to a number"
+
+    | ExprDiv(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (f1, f2) with
+        | ((Number, EvalNumber(n1)), (Number, EvalNumber(n2))) -> (p1, (Number, EvalNumber((n1 - (n1 % n2)) / n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of / operator, should evaluate to a number"
+
+    | ExprMod(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (f1, f2) with
+        | ((Number, EvalNumber(n1)), (Number, EvalNumber(n2))) -> (p1, (Number, EvalNumber(n1 % n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of % operator, should evaluate to a number"
+
+    | ExprConcat(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (f1, f2) with
+        | ((String, EvalString(s1)), (String, EvalString(s2))) -> (p1, (String, EvalString(s1 + s2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of & operator, should evaluate to a string"
+
+    | ExprJoin(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        
+        let ty : typeDef = 
+            match (fst f1, fst f2) with
+            | (Unknown, Unknown) -> Unknown
+            | (Unknown, TypeList(t)) -> TypeList(t)
+            | (t, Unknown) -> TypeList(t)
+            | (t1, TypeList(t2)) -> 
+                if (t1 = t2) then TypeList(t1)
+                else Error.Execution p1 "Types mismatch in joning lists"
+            | (_, _) -> Error.Execution p2 "Tail should evaluate to a list"
+        match (f1, snd f2) with
+        | (h, EvalList(l)) -> (p1, (ty, EvalList(h :: l)))
+        | _ -> Error.Execution p2 "Expression does not evaluate to a list, cannot use :: operator"
+
+    | ExprAddList(e1, e2) -> // Adding two list
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        
+        let ty : typeDef = 
+            match (fst f1, fst f2) with
+            | (Unknown, Unknown) -> Unknown
+            | (Unknown, TypeList(t)) -> TypeList(t)
+            | (TypeList(t), Unknown) -> TypeList(t)
+            | (TypeList(t1), TypeList(t2)) -> 
+                if (t1 = t2) then TypeList(t1)
+                else Error.Execution p1 "Types mismatch in ++ operation "
+            | (_, _) -> Error.Execution p1 "Types mismatch in expression"
+        match (snd f1, snd f2) with
+        | (EvalList(l1), EvalList(l2)) -> (p1, (ty, EvalList(List.append l1 l2)))
+        | (_, _) -> Error.Execution p1 "Expressions on either side of ++ operator, do not evaluate to a list"
+
+    | ExprTuple(p, l) -> 
+        let e = List.map snd (List.map eval l)
+        let t = List.map fst e
+        (p, (TypeTuple(t), EvalTuple(e)))
+
+    | ExprAnd(e1, e2) -> // {cond1} and {cond2}
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if ((fst f1) <> Bool) || ((fst f2) <> Bool) then Error.Execution p1 "Expression do not evaluate to bool"
+        match (snd f1, snd f2) with
+        | (EvalBool(b1), EvalBool(b2)) -> (p1, (Bool, EvalBool(b1 && b2)))
+        | (_, _) -> Error.Execution p1 "Expressions on either side of \"and\" operator, do not evaluate to a bool"
+
+    | ExprOr(e1, e2) -> // {cond1} and {cond2}
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if ((fst f1) <> Bool) || ((fst f2) <> Bool) then Error.Execution p1 "Expression do not evaluate to bool"
+        match (snd f1, snd f2) with
+        | (EvalBool(b1), EvalBool(b2)) -> (p1, (Bool, EvalBool(b1 || b2)))
+        | (_, _) -> Error.Execution p1 "Expressions on either side of \"or\" operator, do not evaluate to a bool"
+
+    | ExprNot(p, e) -> // not {cond}
+        let f = snd (evalGround e)
+        if ((fst f) <> Bool) then Error.Execution p "Expression does not evaluate to bool"
+        match (snd f) with
+        | EvalBool(b) -> (p, (Bool, EvalBool(not b)))
+        | _ -> Error.Execution p "Expression does not evaluate to a bool, cannot use \"not\" operator"
+
+    | ExprGtEq(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if ((fst f1) <> Number) || ((fst f2) <> Number) then Error.Execution p1 "Expression do not evaluate to number"
+        match (snd f1, snd f2) with
+        | (EvalNumber(n1), EvalNumber(n2)) -> (p1, (Bool, EvalBool(n1 >= n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of => or >= operator, do not evaluate to a number"
+
+    | ExprGt(e1, e2) -> // {expr1}>{expr2}
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if ((fst f1) <> Number) || ((fst f2) <> Number) then Error.Execution p1 "Expression do not evaluate to number"
+        match (snd f1, snd f2) with
+        | (EvalNumber(n1), EvalNumber(n2)) -> (p1, (Bool, EvalBool(n1 > n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of > operator, do not evaluate to a number"
+
+    | ExprLtEq(e1, e2) -> // {expr1}=<{expr2}-or-{expr1}<={expr2}
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if ((fst f1) <> Number) || ((fst f2) <> Number) then Error.Execution p1 "Expression do not evaluate to number"
+        match (snd f1, snd f2) with
+        | (EvalNumber(n1), EvalNumber(n2)) -> (p1, (Bool, EvalBool(n1 <= n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of <= or =< operator, do not evaluate to a number"
+
+    | ExprLt(e1, e2) -> // {expr1}<{expr2} 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if ((fst f1) <> Number) || ((fst f2) <> Number) then Error.Execution p1 "Expression do not evaluate to number"
+        match (snd f1, snd f2) with
+        | (EvalNumber(n1), EvalNumber(n2)) -> (p1, (Bool, EvalBool(n1 < n2)))
+        | (_, _) -> Error.Execution p1 "Expressions on both side of < operator, do not evaluate to a number"
+
+    | ExprNotEq(e1, e2) -> // {expr1}!={expr2}
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if (UnifyExpr name p1 vars (UnifyArgExpr(e1)) (UnifyArgExpr(e2))) = None then (p1, (Bool, EvalBool(true)))
+        else (p1, (Bool, EvalBool(false)))
+
+    | ExprEq(e1, e2) -> // {expr1}={expr2}
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        if (UnifyExpr name p1 vars (UnifyArgExpr(e1)) (UnifyArgExpr(e2))) = None then (p1, (Bool, EvalBool(false)))
+        else (p1, (Bool, EvalBool(true)))
+
+    | ExprIfThen(p, e, ee) -> 
+        let b = cond e
+        let f = snd (eval e)
+        match f with
+        | (Bool, EvalBool(bb)) -> 
+            if b then (p, f)
+            else (p, (Bool, EvalBool(true)))
+        | _ -> Error.Execution p "Expression does not evaluate to a bool, need a else also"
+
+    | ExprIfThenElse(p, e, e1, e2) -> 
+        let b = cond e
+        let f1 = snd (eval e1)
+        let f2 = snd (eval e2)
+        let t = GetType (fst f1) (fst f2) p "Expressions on then and else do not match types"
+        if b then (p, (t, snd f1))
+        else (p, (t, snd f2))
+
+    | ExprMemberCheck(e1, e2) -> 
+        let (p1, f1) = evalGround e1
+        let (p2, f2) = evalGround e2
+        match (fst f1, fst f2) with
+        | (Unknown, Unknown) -> ( )
+        | (Unknown, TypeList(t)) -> ( )
+        | (t, Unknown) -> ( )
+        | (t1, TypeList(t2)) -> 
+            if not (MatchType t1 t2) then Error.Execution p1 "Types mismatch in member check"
+        | (_, _) -> Error.Execution p2 "RHS should evaluate to a list"
+        match (snd f1, snd f2) with
+        | (h, EvalList(l)) -> 
+            let k = List.tryFindIndex (fun x -> x = h) (List.map snd l)
+            (p1, 
+             (Bool, 
+              EvalBool(if (k = None) then false
+                       else true)))
+        | (_, _) -> Error.Execution p2 "Expression does not evaluate to a list, cannot use \"in\" operator"
+
+    | ExprTailList(p, el, tailexpr) -> 
+        let headList = List.map evalGround el |> List.map snd
+        let (p2, (t2, tail)) = evalGround tailexpr
+        
+        let typelist = 
+            headList
+            |> List.map fst
+            |> List.filter (fun x -> x <> Unknown)
+        
+        let t1 : typeDef = 
+            match typelist with
+            | h :: t -> 
+                if not (HomogeneousList typelist) then Error.Execution p "List has different types of elements"
+                h
+            | [] -> Unknown
+        
+        let t = GetType t1 t2 p "List has different types of head elements and tails"
+        match tail with
+        | EvalList(l2) ->  (p, (t, EvalList(List.append headList l2)))
+        | _ -> Error.Execution p "Expression should evaluate to a list"
+
+    | ExprVar(m) -> 
+        let (p, s) = (StripIdentifier m)
+        if constant then Error.Execution p (sprintf "Constant expression cannot have variable %s" s)
+        let (n1, n2) = (SplitIdentifier name m)
+        
+        let permit n1 = 
+            if (Program.GetOrder n1) <= (Program.GetOrder name) then true
+            else false
+        if (vars.ContainsKey n2) then (p, vars.[n2])
+        else 
+            match (Program.GetDef name m) with
+            | None -> Error.Execution p (sprintf "Variable %s does not exists" s)
+            | Some(DefConstant(ee)) -> (p, ee)
+            | Some(DefSingleVar(t)) -> 
+                if (permit n1) then 
+                    match Store.GetSingleVar(n1, n2) with
+                    | Some(z) -> (p, (t, z))
+                    | None -> Error.Execution p (sprintf "Store %s has not been initialized" s)
+                else (Error.Execution p (sprintf "Data in module %s cannot be accessed from module %s" n1 name))
+            | Some(DefListVar(t)) -> 
+                if (permit n1) then 
+                    match Store.GetListVar(n1, n2) with
+                    | Some(z) -> (p, (TypeList(t), EvalList(List.map (fun x-> (t,x)) z)))
+                    | None -> Error.Execution p (sprintf "Store %s has not been initialized" s)
+                else (Error.Execution p (sprintf "Data in module %s cannot be accessed from module %s" n1 name))
+            | _ -> 
+                if ground then Error.Execution p (sprintf "Could not resolve variable %s" s)
+                if (n1 = name) then (p, (Unknown, EvalVar(p, n2)))
+                else Error.Execution p (sprintf "Could not evaluate variable from another module %s" n1)
+
+    | ExprFunCall(m, l) -> //{identifier}({expr} ...)
+        let (p, funcName) = (StripIdentifier m)
+        match (Program.GetDef name m) with
+        | Some(DefFunction(args, d)) -> 
+            if (args.Length <> l.Length) then 
+                Error.Execution p (sprintf "Wrong number of arguments calling fucntion %s" funcName)
+            let processVars (v : varBag) (arg : param, ex : expr) : varBag = 
+                let (pp, (t, f)) = evalGround ex
+                match arg with
+                | ParamTyped(i, tt) -> 
+                    if (MatchType t tt) then Program.AddVar name v i (t, f)
+                    else Error.Execution pp (sprintf "Type mismatch in argument %s" (snd i))
+                | ParamUntyped(i) -> Program.AddVar name v i (t, f)
+            
+            let vv = List.fold (fun s x -> processVars s x) Map.empty (List.zip args l)
+            match (ExecuteBlockFunc vv name d true) with
+            | FuncResultReturn(res) -> (p, res)
+            | FuncResultVars(_) -> Error.Bug p "Terminal function bodies should not return var table"
+        | Some(_) -> Error.Execution p (sprintf "Defination for %s is not a Function" funcName)
+        | None -> Error.Execution p (sprintf "Could not resolve the defination for %s" funcName)
+
+    | ExprRecord(p, m) -> 
+        let t = Map.map (fun k v -> fst (snd (eval v))) m
+        let f = Map.map (fun k v ->  (snd (eval v))) m
+        (p, (TypeRecord(t), EvalRecord(f)))
+
+    | ExprMapCall(m, e) -> 
+        let (p, mapName) = StripIdentifier m
+        match (Program.GetDef name m) with
+        | Some(DefMapVar(kt, vt)) -> 
+            let (pp, (t, f)) = eval e
+            if (MatchType t kt) then 
+                Error.Execution pp (sprintf "Key type for Map %s does not match the type provided" mapName)
+            match (Store.GetMapVar (SplitIdentifier name m) f) with
+            | Some(v) -> (pp, (vt, v))
+            | None -> Error.Execution pp (sprintf "Map store %s not initialized with that key" mapName)
+        | Some(_) -> Error.Execution p (sprintf "%s is not a Map" mapName)
+        | None -> Error.Execution p (sprintf "Could not resolve map %s" mapName)
+
+    | ExprTerm(n, l) -> 
+        let (k, d) = Program.GetTermInfo (snd n) (fst n)
+        let evals = List.map eval l
+        if (l.Length <> d.Length) then Error.Execution dummyPosition "Mistmacth in argumetns"
+        let types = List.map (fun ((p,v), t) -> (p, (t, fst v)) ) (List.zip evals d)
+        List.iter (fun (p, (t1, t2)) -> if not (MatchType t1 t2) then Error.Execution p "Types mismatch") types
+        let values = List.map snd evals
+        (fst n, (TypeReference(fst k, snd k), EvalTerm(n, values)))
+    
+
+and UnifyExpr (name : string) (pos : position) (vars : varBag) (arg1 : unifyArg) (arg2 : unifyArg) : varBag option = 
+    
+    let unify = UnifyExpr name pos
+    
+    let processVars (s : varBag option) (x, y) : varBag option = 
+        match s with
+        | None -> None
+        | Some(v) -> unify v (UnifyArgValue(x)) (UnifyArgValue(y))
+    
+    let (t1, f1) = 
+        match arg1 with
+        | UnifyArgExpr(z) -> snd (EvalExpr name false vars false z)
+        | UnifyArgValue(z) -> z
+    
+    let (t2, f2) = 
+        match arg2 with
+        | UnifyArgExpr(z) -> snd (EvalExpr name false vars true z)
+        | UnifyArgValue(z) -> z
+    
+    if not (MatchType t1 t2) then Error.Execution pos "Types don't match in Unification"
+    match (f1, f2) with
+    | (_, EvalVar(_)) -> Error.Bug pos "Variable came into a grounded expression"
+    | (EvalVar(v), e) -> Some(Program.AddVar name vars v (t2, f2))
+    | (EvalNumber(n1), EvalNumber(n2)) -> 
+        if (n1 = n2) then Some(vars)
+        else None
+    | (EvalString(s1), EvalString(s2)) -> 
+        if (s1 = s2) then Some(vars)
+        else None
+    | (EvalBool(b1), EvalBool(b2)) -> 
+        if (b1 = b2) then Some(vars)
+        else None
+    | (EvalList(l1), EvalList(l2)) -> List.fold processVars (Some(vars)) (List.zip l1 l2)
+    | (EvalTuple(l1), EvalTuple(l2)) -> List.fold processVars (Some(vars)) (List.zip l1 l2)
+    | (EvalRecord(r1), EvalRecord(r2)) -> 
+        let k1 = r1 |> Map.toList |> List.map fst |> List.map snd
+        let k2 = r2 |> Map.toList |> List.map fst |> List.map snd
+        
+        let m1 = 
+            r1
+            |> Map.toList
+            |> List.map (fun x -> (snd (fst x)), snd x)
+            |> Map.ofList
+        
+        let m2 = 
+            r2
+            |> Map.toList
+            |> List.map (fun x -> (snd (fst x)), snd x)
+            |> Map.ofList
+        
+        if not (CompareList k1 k2) then Error.Bug pos "How come Types match and the Map keys of record don't?"
+
+        List.fold ( fun s k ->
+            match s with
+            | None -> None
+            | Some(v) -> unify v (UnifyArgValue(m1.[k])) (UnifyArgValue(m2.[k])))  (Some(vars)) k1
+
+    | (EvalTerm(i1, l1), EvalTerm(i2, l2)) -> 
+        match (t1, t2) with
+        | (TypeUnion(tl1), TypeUnion(tl2)) -> 
+            if (snd i1 <> snd i2) then None
+            else List.fold processVars (Some(vars)) (List.zip l1 l2)
+        | (_, _) -> Error.Bug pos "Unify should not reach here if the types don't match"
+
+    | _ -> Error.Bug pos "Unify should not reach here if the types don't match"

@@ -1,0 +1,72 @@
+% ******************************************************************
+%    GENERATOR: Print all error messages (if any), Generate files
+% ******************************************************************
+
+
+% **** MERGE WITH  EXECUTE 
+
+class generator
+    open core, common
+
+domains
+    sourceName = string
+    sourceFile = (sourceName, string* Contents)
+
+predicates
+    main: (string* Errors, sourceName* Required, sourceFile*) procedure(i,i,i)
+
+end class generator
+
+
+implement generator
+    open core, common, file, list
+
+class predicates
+    exists(Name,Files).
+
+
+clauses
+
+    main(Errors, Required, Files) :-
+        if (Errors <> []) then
+            For each E, designError(E) end foreach
+        else
+            
+            exists(Name, Files):- L = seq { for (FileName, _) in Files do if (string::trim(Name) = string::trim(FileName)) then yeild Name}
+            MissingFiles = seq { for Name in Required do if not(exists(Name, Files) then yeild Name} |> to List |> Unique
+
+            foreach FileName = list::getMember_nd(MissingFiles) do
+                buildError(FileName failed to build)
+            end foreach,
+
+            *** Will move writing into file in common?
+            
+            foreach FileName = list::getMember_nd(Files) do
+                FileName = sourceFile(Name, Contents),
+                try
+                    OutputFile =outputStream_file::create(string::trim(Name)),
+                    foreach SourceLine = list::getMember_nd(SourceLine) do
+                        OutputFile:write(SourceLine),
+                        OutputFile:write("\n"),
+                    end foreach,
+                    OutputFile:close()
+                catch _TraceId do
+                    buildError(Name failed to write)
+                end try
+            end foreach,
+        end if.
+
+    
+
+end implement generator
+
+main: -> Will got to Genertate
+    E = Get all Error Messages
+    if E is empty then
+        Get Required Files
+        Get Build Files
+        Do Generation
+
+        if Build Error then exit otherwise Return
+        
+    else Print Error Messages

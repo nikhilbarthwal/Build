@@ -1,0 +1,86 @@
+module myutils.
+
+% --- Print Error message based on error type ---
+print_error(E), E=$error1(F,M) => print('Error '), print(F), print(' : '), println(M).
+print_error(E), E=$error2(F,N,M) => print('Error '), print(F), print('('), print(N), print(') : '), println(M).
+print_error(E), E=$error3(F,N,P,M) => print('Error '), print(F), print('('), print(N), print(','), print(P),print(') : '), println(M).
+
+% --- Count & Display file errors ---
+private
+print_file_errors(L) = E =>
+		if (L=[H|T]) then 
+			if (print_error(H)) then
+				E=1+print_file_errors(T)
+			else
+				E=print_file_errors(T)
+			end
+		else
+			E=0
+		end.
+
+
+% --- Display final error count ---
+private
+print_error_status(E), E=0 => true.
+print_error_status(E), E=1 => nl, println("Exit: 1 error detected"), nl, halt.
+print_error_status(E), E>1 => nl, print("Exit: "), print(E), print(" errors detected"), nl, halt.
+
+
+% --- Check for errors messages ---
+check_errors(L), not(list(L)) => true.
+check_errors(L), list(L) => E=print_file_errors(L), print_error_status(E).
+
+
+% --- Trim leading whitespaces ---
+chop(X) = Y =>
+	if (X=[H|T]) then
+		if (H=$white(_,_,_)) then Y=T else Y=[H|T] end
+	else
+		Y=X
+	end.
+
+% --- Trim leading & trailing whitespaces ---
+trim(X) = Y => Y=reverse(chop(reverse(chop(X)))).
+
+% --- Extract the last element and the emining elements ---
+last(Z,R,L) => ZZ=reverse(Z), ZZ=[L|T], R=reverse(T).
+
+% --- Clip Function ---
+clip(X) = Y =>	if (X=[H]) then Y=H else Y=X end.
+
+% --- Split List into fragments ---
+split(L,L1,L2) ?=> L=[H|T], L1=[H], not(T=[]), L2=T.
+split(L,L1,L2) ?=> L=[H|T], split(T, LL, L2), L1=[H|LL].
+
+
+% --- Extract position ---
+token_position(L,_), LL=chop(L), LL=[]=> fail.
+token_position(L,Z), H=head(chop(L)), H=$identifier0(F,N,P,_) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$identifier1(F,N,P,_) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$integer(F,N,P,_) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$str(F,N,P,_) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$symbols(F,N,P,_) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$white(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$open1(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$close1(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$open2(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$close2(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$open3(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z), H=head(chop(L)), H=$close3(F,N,P) => Z=$pos(F,N,P).
+token_position(L,Z) => print('Assertion failure in: position( '), print(L), print(', '), print(Z), print(')'), throw exception.
+
+% --- Token Info ---
+token_identifier0(X,Y) => Z=clip(X), Z=$identifier0(_,_,_,Y).
+token_identifier1(X,Y) => Z=clip(X), Z=$identifier1(_,_,_,Y).
+token_integer(X,Y) => Z=clip(X), Z=$integer(_,_,_,Y).
+token_str(X,Y) =>  Z=clip(X), Z=$str(_,_,_,Y).
+token_symbols(X,Y) => Z=clip(X), Z=$symbols(_,_,_,Y).
+token_white(X) =>  Z=clip(X), Z=$white(_,_,_).
+token_open1(X) =>  Z=clip(X), Z=$open1(_,_,_).
+token_open2(X) =>  Z=clip(X), Z=$open2(_,_,_).
+token_open3(X) =>  Z=clip(X), Z=$open3(_,_,_).
+token_close1(X) =>  Z=clip(X), Z=$close1(_,_,_).
+token_close2(X) =>  Z=clip(X), Z=$close2(_,_,_).
+token_close3(X) =>  Z=clip(X), Z=$close3(_,_,_).
+
+

@@ -1,0 +1,257 @@
+1. eval expr
+2. unify expr
+3. checkMajorList
+4. enumMajorList
+5. executeMap
+6. executeLoop
+7. ground clause
+
+
+
+F = Eval (V, E) is procedure
+Unify(V, VV, E1, E2) is determ
+check(V,C) is determ
+
+Map(E, M, B, V) :- is procedure
+    L = enumerate(V,M), % Check: M and V should not have duplicate variables
+    Final = executeMap(Init=[], L, V, B)
+    Return reverse(Final).
+
+executeMap(Input, L, V,B)  = Ouput:-
+    If (L=[H|T]) then
+        VV = append(V, H),
+        If (executeBody(VV, B return=true,C)) then
+            NextInput = [C|Input]
+        Else
+            NextInput = Input
+        End if
+        Output = executeMap(NextInput, T, V, B)
+    else
+        Output = Input
+    end if.
+    
+    
+Loop(E , X, I, M, B, V)  :-
+    % Check if X is par of V
+    Y = Eval I
+    L = enumerate(V,M), % Check: M and V should not have duplicate variables
+    executeLoop(Final, Loop Var Name , Init, V is Var Table,  B, L),
+    E=Final.
+    
+executeLoop(Final, Var Name, Expr, V0 is Var Table, B, L) :-
+    If (L=[H|T]) then
+        Add(X=Y) to V0 ->  V1
+        Add H : V1 -> V2
+        executeBody(V2,B,return=true, C),
+        executeLoop(Final, Var Name, C, V0, B, T)
+    Else
+        Final = Expr
+    End if.
+
+
+
+executeBlock(V, B, return = true, C)
+execueBlock(V, B,  return=false, _)
+
+
+
+
+%program = program(string Name, lexer::token* ExternList, varBlock*, funcBlock*, condBlock*).
+
+    varBlock = varBlock(lexer::token Name, parser::expr Value).
+
+    funcBlock =
+        cFunBlock(lexer::token Name, lexer::token* IdentifierList, parser::cond Condition, statement* Body) ;
+        gFunBlock(lexer::token Name, lexer::token* IdentifierList, statement* Body).
+
+    condBlock =
+        cCondBlock(lexer::token Name, lexer::token* IdentifierList, parser::cond Condition, statement* Body) ;
+        gCondBlock(lexer::token Name, lexer::token* IdentifierList, statement* Body).
+
+    statement =
+        unify(parser::expr, parser::expr) ;
+        yeild(parser::expr) ;
+        %block(statement*) ; Nested blocks are not allowed!
+        check(parser::cond) ; % condition
+        map(parser::expr, parser::majorlist, statement* Block) ;
+        if_then_else(parser::cond If, statement* Then, statement* Else) ;
+        loop(parser::expr , lexer::token V, parser::expr I, parser::majorlist, statement* Block) ;
+        forloop(parser::majorlist, statement* Block) ;
+        return(parser::expr) ; % only for function
+        stop.
+
+        
+        executeBody(table Table, statement* L, bool Return, constant Value) :-
+
+executeBody(_T,  [], R=true, _V) :- Report Fata Error & Exit
+
+executeBody(_T,  [], R=false, V = dummy) :- !.
+
+executeBody(_T,  [S|_], R=false, V = dummy) :- S=return statemenen, Fatal error.
+
+executeBody(T, [S|_],  R=true, V) :- S=return(E), V = eval(E, T).
+
+executeBody(T, [S|L],  R, V) :-  S=unify(U1, U2), unify(T, TT, U1, U2), executeBody(TT, L, R, V)
+
+executeBody(T, [S|L],  R, V) :-  S=check(C), doCheck(T,C), executeBody(TT, L, R, V).
+
+executeBody(T, [S|L],  R, V) :-  
+    S=map(E,M,B),
+    checkMajorList(T,M),
+    MM = enumMajorList(M)
+    Eval = executeMap([], MM, T, B)
+    unify(T, TT, E, Eval),
+    executeBody(TT, L, R, V).
+
+executeBody(T, [S|L],  R, V) :- 
+    S = loop(E, X, I, M, B),
+    If (X in T) then fatal error end if.
+    II = eval(T, I),
+    MM = enumMajorList(M),
+    executeLoop(F, X, II, T, B, MM),
+    unify(T, TT, E, F),
+    executeBody(TT, L, R, V).
+
+
+    
+    
+
+
+________________________________________________________________________________
+component Name(Param1, Param2, Param3) : [Inp1, Inp2, Inp3 | Out1, Out2, Out3 ]
+[
+
+    match pattern : [ F -> input1, G -> input2 | H <- out1 , K <- out2 ]
+
+
+]
+
+Feature FeatureName
+
+extern Z
+
+var X = <value>
+const X = <value>
+
+function Name(a,b,c,...)
+[
+  statement1
+|
+  statement
+]
+
+condition Name(a,b,c, ...)
+function Name(a,b,c,...)
+[ condition1 =>
+  statement1
+| condition2 =>
+  statement
+| =>
+  statement
+]
+
+
+statement ::
+expr = expr
+condition
+return X
+stop
+
+Z = maplist(majorlist)
+[
+   statements are determ, value accumulated for failed item 
+   return value for each list item
+]
+
+Z = loop(Z=init: majorlist)
+[
+   statements are determ, the entie statement files
+   return value for each list item
+]
+
+
+
+
+
+data =
+    number
+    string
+    identifier0
+    term : identifier0 (data, data, data data ...)
+    list : [data, data, data, ...]
+
+pair = ***
+    memlist: identifer1 in expr
+
+minorlist = ***
+    pair , pair , ..
+    pair ...
+
+majorlist = ***
+    pair , pair , ..
+    pair ...
+
+    
+expr =
+    ifthenelse : if condition then e1 else e2
+    add : e1 + e2
+    sub : e1 - e2
+    multiply: e1 * e2
+    div: e1 / e2
+    mod: e1 % e2
+    concat: e1 & e2
+    joinhead: e1 ^ e2
+    addlist: e1 ++ e2, both e1 and e2 are list
+    genlist: e1 .. e2
+    % maplist map[majorlist : expr ?- cond] ***
+    % maplist map[majorlist : expr ] ***
+    funccall: identifier1:name ( e1, e2 , e3, e3 , e4 , ...)
+    constant(data)
+    var : identifier1
+    expr : ( expr )
+    
+cond =
+    member: e1 in e2
+    condif1: if C0 then C1
+    condif2: if C0 then C1 else C2
+    cond_and: C1 and C2
+    cond_or: C1 or C2
+    ge: E1 >= E2
+    gt: E1 > E2
+    le: E1 <= E2
+    lt: E1 < E2
+    eq: E1 = E2
+    ne: E1 != E2
+    cond_call: identifier1:name ( e1 , e2 , e3 , e4 , ...)
+    inverse: !C
+    condition: (C)
+
+statement:
+    identifier1 = expr
+    cond
+        
+
+
+program = program(string Name, lexer::token* ExternList, varBlock*, funcBlock*, CondBlock*).
+
+varBlock = varBlock(lexer::token Name, parser::expr Value).
+
+funcBlock = 
+    cFunBlock(lexer::token Name, lever::token* IdentifierList, parser::cond Condition, statement* Body) ;
+    gFunBlock(lexer::token Name, lever::token* IdentifierList, statement* Body).
+
+condBlock = condBlock(lexer::token Name, lever::token* IdentifierList, statement* Body).
+
+statement =
+        unify(parser::expr, parser::expr) ;
+        check(parser::cond) ; % condition
+        map(parser::expr, parser::majorlist, statement* Block) ;
+        loop(parser::expr , lexer::token V, parser::expr I, parser::majorlist, statement* Block) ;
+        % Add foreach Block here
+        return(parser::expr) ; % only for function
+        stop.
+
+
+1. Add _Var
+2. Add Foreach Var
+3. Edit Cuts in Parser

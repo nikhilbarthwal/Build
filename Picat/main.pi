@@ -1,0 +1,70 @@
+import os.
+
+import myutils.
+import tokenizer.
+import parser.
+
+
+main(L) =>
+	if (L=[F]) then
+	
+		println(' *** Start ***'),nl,
+		
+		if (file_exists(F)) then
+			if (readable(F))then
+				catch(start(F), E, print_error($error1(F,E)))
+			else
+			    print_error($error1(F,'File is not readable!'))
+			end
+        else
+        	print_error($error1(F,'File does not exists!'))
+        end
+	else
+		println('Usage: Main [FileName]')
+	end.
+
+
+main => println('Usage: Main [FileName]').
+
+
+print_file([]) => nl.
+print_file([H|T]) => print('-  '), println(H), print_file(T).
+
+start(F) =>
+	R = read_file_lines(F),
+	L = tokenize_file(F,R),
+	check_errors(L),
+	merge_file(L,M),
+	%print_file(M),
+	P=parse_file(M),
+	check_errors(P),
+	print_file(P).
+
+
+
+
+
+% S=structure(P),
+% check_errors(S),
+% if (execure(S)) then print success, else print error.
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+	

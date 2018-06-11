@@ -1,0 +1,10 @@
+Bin/
+
+Build/bin
+Build/obj/
+
+*.suo
+
+source.p*
+
+*.class
