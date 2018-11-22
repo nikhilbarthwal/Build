@@ -1,0 +1,197 @@
+<html>
+<head>
+  <title>Prolog</title>
+  <basefont face="Segoe UI" size="2" />
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta name="exporter-version" content="Evernote Windows/308094 (en-US, DDL); Windows/10.0.0 (Win64);"/>
+  <style>
+    body, td {
+      font-family: Segoe UI;
+      font-size: 10pt;
+    }
+  </style>
+</head>
+<body>
+<a name="1321"/>
+<h1>Prolog</h1>
+
+<div><span><div>
+<span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Libraries:</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Json/XML/Yaml</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Infinite Integer</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">File System</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Date Time? Perhaps!</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+______________</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Predicate:</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">List&lt;PredicateInstance&gt;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+PredicateInstance:</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">List&lt;PredStatements&gt;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">List&lt;Pattern&gt;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 10.0px Menlo; color: #454545;">•</span><span style="font: 10.0px Menlo; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">assert(V is empty)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+def Execute(statemen S, Map&amp; v, Stack&amp; ST) : bool</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">bool statement_success = false;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">if S is deterministic</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Loop1: for(L of instances of S)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">VV = create a new Map of V</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">bool b = Execite(L.begin(), VV, ST)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">if (b)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">statement_success = true;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">if (L is not last instance) : Add choiceppint to ST</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">break;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">if (statement_success)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Statement++</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">if Statement is last then return V</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">return Execute(S,V, St);</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">retrieve last choice point</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">V.replace(one from the choice point)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">Execute(S, V, ST)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;"> its B.end()</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+ST Stack retrieve</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+bool fail = false;</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+for(s in S)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+if si is nondeterministic</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+load a new choice point in ST</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Call the executor</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+if fail - breakout</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+if fail</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+if (ST.end) return v</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">S++</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+else</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545; white-space: pre;">	</span><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">assert(V is empty);</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Construct a new V</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+for(statement in statement list)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+if another red call, push it stack, the choice point</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+V  = call new Pred</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+if (V is fail)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+stat</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+___________________________________</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+abd</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Abc</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Abc:abc</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+124</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
++ , - , * &amp; etc</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+( list )</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+[ list ] </span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{ list }</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Data Types:</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Terms</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+List</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+primitive</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+Functionals</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(  F a b c) - evaluate F on a, b, c</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{F A B C} - list</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+[F A B C] - tupe of F,A,B,C</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+[f a b c] - term</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(define A (B C D) body)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+{|   |}</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+-| niche</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(list int) //list(int)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+[lint string]</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(define A (B:int C:(list int)) body)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(do (Routine r:int ) body) </span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(defun )</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+(? N 8)</span></div><div><span style="font: 12.0px 'Helvetica Neue'; color: #454545;">
+</span></div></span>
+</div></body></html> 

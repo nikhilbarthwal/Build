@@ -1,0 +1,402 @@
+<html>
+<head>
+  <title>Examples</title>
+  <basefont face="Segoe UI" size="2" />
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta name="exporter-version" content="Evernote Windows/308094 (en-US, DDL); Windows/10.0.0 (Win64);"/>
+  <style>
+    body, td {
+      font-family: Segoe UI;
+      font-size: 10pt;
+    }
+  </style>
+</head>
+<body>
+<a name="1501"/>
+<h1>Examples</h1>
+
+<div>
+<span style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+<div><br/></div>
+<div align="left">Tokens:<br/>
+<br/>
+     1. Keywork(small string)<br/>
+     2. Identifier (Capital string)<br/>
+     3. Symbol<br/>
+     4. String<br/>
+     5. Number<br/>
+     6. White<br/>
+     7. NL<br/>
+     8. Work</div>
+<div><br/></div>
+<div>TODO: Area to work on is Type definations</div>
+<div><br/></div>
+<div align="left">Note:<br/>
+     1. Whenver you have { }, all CNL or NL inside convert themselve to white untill NL only line happens<br/>
+     2. A line will  have comments at the end chopped off<br/>
+     3. The ; is for joining lines, similar to Python's \<br/>
+<br/>
+Descrition:<br/>
+     Starting from module, There are definations for variables, functions (using defines), classes, and<br/>
+     rules (headed or not), predicate.<br/>
+<br/>
+<br/>
+Syntax Examples:<br/>
+<br/>
+-- This is comment amd the other comment is {- -}, the inline one<br/>
+<br/>
+-- First the variable starting Car with an optional type.<br/>
+<br/>
+Const int D = 34<br/>
+<br/>
+-- You can even define lamda functions like that<br/>
+<br/>
+Const D = lamda (A,S,V,F) =&gt; A + S<br/>
+<br/>
+-- or even:<br/>
+<br/></div>
+<div>Const D = lamda (A,S,V,F) =&gt; A + S :</div>
+<div align="left">     E=T</div>
+<div>     F=T.</div>
+<div><br/></div>
+<div align="left">-- the scope block opertor : should be lowers priority<br/>
+<br/>
+{-</div>
+<div><br/></div>
+<div>NOO : Once it counters { and }, all no’s inside convert into space</div>
+<div align="left"><br/>
+-}<br/>
+<br/></div>
+<div>-- This is multi line list, terminated by a . and nl</div>
+<div>Const D := </div>
+<div align="left">     [<br/>
+          ty,<br/>
+          ty,<br/>
+          ty<br/>
+          ty<br/>
+     ].<br/>
+<br/></div>
+<div><br/></div>
+<div>-- This is again a multi line term, terminated by a . &amp; nl</div>
+<div align="left">Const E :=<br/>
+     term(&quot;fghh&quot;,<br/>
+          [<br/>
+               ty,<br/>
+               ty,<br/>
+               ty,<br/>
+               ty<br/>
+          ]<br/>
+     ).<br/>
+<br/>
+-- Then comes function inside class: Function [optnal type] Name(Params) = expr, and you can have scope block thing here :</div>
+<div><br/></div>
+<div>Type  Name&lt;type,type&gt; = struct(X,Y,Z): interface1, interface 2</div>
+<div>     var XX = Xexpr ; is line continuation</div>
+<div>     var YY = Yexpr</div>
+<div><br/></div>
+<div>     assert S1 :</div>
+<div>          a</div>
+<div>          b</div>
+<div>          c.</div>
+<div><br/></div>
+<div>     assert S2:</div>
+<div>          a</div>
+<div>          b</div>
+<div>          c.</div>
+<div><br/></div>
+<div>     Function A(r,t,y,) = R(t,y,c):</div>
+<div>          f</div>
+<div>          g</div>
+<div>          h.</div>
+<div><br/></div>
+<div>     Static Function type Return(T,Y,U) = R:</div>
+<div>          R = T.</div>
+<div>Type Name&lt;Type, Type&gt; = union:</div>
+<div>     Line A(A, B, R),</div>
+<div>     Line B(A, B, R).</div>
+<div><br/></div>
+<div>Interface name:</div>
+<div>     Function int Name(int, int, int) - - you cannot have </div>
+<div>     Function string Name2(string, _). - - skip types by _ and skip return types also</div>
+<div><br/></div>
+<div>Feature Name:</div>
+<div><br/></div>
+<div>     out The(T, R, E) = Something:</div>
+<div>          blah blah</div>
+<div>          blah blah.</div>
+<div><br/></div>
+<div>     out The(T, R, E):</div>
+<div>          blah blah.</div>
+<div><br/></div>
+<div>     rule:</div>
+<div>          g</div>
+<div>          assert message ?- expr:</div>
+<div>               a1</div>
+<div>               a2</div>
+<div>               a3.</div>
+<div><br/></div>
+<div>          a</div>
+<div>          b.</div>
+<div><br/></div>
+<div>     rule F(r,t,):</div>
+<div>          a</div>
+<div>          b</div>
+<div>          c.</div>
+<div><br/></div>
+<div>     in Del(A, B, C)</div>
+<div><br/></div>
+<div>     const D = 451</div>
+<div><br/></div>
+<div>     assert Message_Expr:</div>
+<div>          a</div>
+<div>          b</div>
+<div>          c.</div>
+<div><br/></div>
+<div>     assert Message_Expr:</div>
+<div>          a</div>
+<div>          b</div>
+<div>          c.</div>
+<div><br/></div>
+<div><br/></div>
+<div>Function Nikhil(int R, int S) = T:</div>
+<div align="left">     T = R + S</div>
+<div>     Assert condition -&gt; message (can have scopt here).</div>
+<div><br/></div>
+<div><br/></div>
+<div align="left"><br/>
+{- Here, the form is expr: nl [ multiple assignments adn then nl and ] nl</div>
+<div>The : operator has the least pririty for this reason. You can raise exceptions -}</div>
+<div align="left"><br/>
+-- Type name = collecntions of unions<br/>
+Type line = line1(int) ; line2(int, int)<br/>
+<br/>
+-- You could also have the same := where it will look for a . to end<br/>
+<br/>
+Type line :=<br/>
+     line1(int);<br/>
+     line2(int, int).<br/>
+<br/>
+-- Types can be unions or parametric classes, which needs to written as -&gt;<br/>
+Type myMap -&gt; map(int, int)<br/>
+<br/>
+-- Note that type should always be lower cased<br/>
+<br/>
+-- Now the class defination<br/>
+<br/></div>
+<div><br/></div>
+<div align="left"><br/>
+-- If the name starts with _, then it is private<br/>
+<br/>
+<br/></div>
+<div><br/></div>
+<div align="left"><br/>
+<br/>
+% TO DO: adding String format to expr<br/>
+<br/>
+% 1. Complete Definations (with exceptions)<br/>
+% 2. Design Transformer(Old Program-&gt;New Program, ErrorList)<br/>
+% 3. Executionaer<br/>
+% 4. Builder<br/>
+% 5. Main<br/>
+% 6.<br/>
+<br/>
+<br/>
+<br/>
+Function T(T,Y,U,U) = R:<br/>
+[<br/>
+<br/>
+<br/>
+]<br/>
+<br/>
+For Function statements::- type expr ---&gt;<br/>
+    exprIf(pos(expr), pos(expr), pos(expr)); % exprIf(Condition, Then, Else)<br/>
+    exprData(data); % Data<br/>
+    exprVar(identifier); % Variable<br/>
+    exprCall(identifier, block(expr)); %  Func/ Pred call with all vars bound<br/>
+    exprOp1(operator1, pos(expr));<br/>
+    exprOp2(operator2, pos(expr), pos(expr));<br/>
+    exprTerm(pos(string), block(expr)); % Term expression<br/>
+    exprLet(list(pair), pos(expr));<br/>
+    exprSeq(block(statement(pred)), pos(expr));<br/>
+    exprEval(block(expr), pos(expr)); same as call<br/>
+    exprSwitch(pos(expr), block(switchCaseExpr), pos(expr)). % Expr, Case list, Default Case<br/>
+<br/>
+But for Expr: onlt &quot;if then&quot; and &quot;let in&quot;, so no switch and sequence<br/>
+<br/>
+For Predicate statement:<br/>
+<br/>
+    statementAssert(pos(expr));<br/>
+    statementStop;<br/>
+    statementContinue;<br/>
+    statementUnify(pos(pattern), pos(pattern));<br/>
+    statementIf(pos(expr), block(statement(T)));<br/>
+    statementIfElse(pos(expr), block(statement(T)), block(statement(T)));<br/>
+    statementCall(pos(string), block(pattern));<br/>
+    statementSwitch(pos(pattern), block(switchCase(T)), block(statement(T)));% Expr, Case list, Default Case<br/>
+    statementMember(pos(pattern), pos(pattern));<br/>
+    statementCustom(T).<br/>
+<br/>
+:=<br/>
+[<br/>
+<br/>
+]<br/>
+<br/>
+:- module definations.<br/>
+<br/>
+:- interface.<br/>
+<br/>
+:- import_module io, int, list, string, bool, char.<br/>
+<br/>
+:- pred main(io::di, io::uo) is det.<br/>
+<br/>
+:- type counter == int. % Unsigned Number<br/>
+<br/>
+:- type number == int.  % Signed Number<br/>
+<br/>
+:- type position == { string, counter, counter }. % (filename, linepos, counter)<br/>
+<br/>
+:- type pos(T) ---&gt; position(val::T, position).<br/>
+<br/>
+:- type block(T) == list(pos(T)).<br/>
+<br/>
+:- type operator1 ---&gt; opNegate ; opNot.<br/>
+<br/>
+:- type operator2 ---&gt; opAdd ; opSub ; opMult ; opDiv ; opAppend ; opNeq ; opGt ;<br/>
+                       opGe ; opLt ; opLe ; opAnd ; opOr ; opEq ; opIn.<br/>
+<br/>
+%:- type identifier ---&gt; this(pos(string)) ; that(pos(string), pos(string)).<br/>
+:- type identifier == pos(string).<br/>
+<br/>
+:- type data.<br/>
+:- type expr.<br/>
+:- type pattern.<br/>
+:- type pair.<br/>
+:- type predType.<br/>
+:- type ruleType.<br/>
+:- type statement(_).<br/>
+:- type typeDef.<br/>
+<br/>
+:- type data ---&gt;<br/>
+    dataChar(char);<br/>
+    dataNum(number);<br/>
+    dataBool(bool);<br/>
+    dataFunction(list(string), expr);<br/>
+    dataOperator1(operator1);<br/>
+    dataOperator2(operator2);<br/>
+    dataTuple(list(data));<br/>
+    dataTerm(string, list(data)).<br/>
+<br/>
+:- type expr ---&gt;<br/>
+    exprIf(pos(expr), pos(expr), pos(expr)); % exprIf(Condition, Then, Else)<br/>
+    exprData(data); % Data<br/>
+    exprVar(identifier); % Variable<br/>
+    exprCall(identifier, block(expr)); %  Func/ Pred call with all vars bound<br/>
+    exprOp1(operator1, pos(expr));<br/>
+    exprOp2(operator2, pos(expr), pos(expr));<br/>
+    exprTerm(pos(string), block(expr)); % Term expression<br/>
+    exprLet(list(pair), pos(expr));<br/>
+    exprSeq(block(statement(pred)), pos(expr));<br/>
+    exprEval(block(expr), pos(expr));<br/>
+    exprSwitch(pos(expr), block(switchCaseExpr), pos(expr)). % Expr, Case list, Default Case<br/>
+<br/>
+:- type pair == { pos(string),  pos(expr) }.<br/>
+<br/>
+:- type switchCaseExpr == { pattern, pos(expr), pos(expr) }.<br/>
+<br/>
+:- type pattern ---&gt;<br/>
+    patternExpr(pos(expr));<br/>
+    patternIgnore(position);<br/>
+    patternUnify(pos(string));<br/>
+    patternTerm(pos(string), block(pattern)).<br/>
+<br/>
+:- type statement(T) ---&gt;<br/>
+    statementAssert(pos(expr));<br/>
+    statementStop;<br/>
+    statementContinue;<br/>
+    statementUnify(pos(pattern), pos(pattern));<br/>
+    statementIf(pos(expr), block(statement(T)));<br/>
+    statementIfElse(pos(expr), block(statement(T)), block(statement(T)));<br/>
+    statementCall(pos(string), block(pattern));<br/>
+    statementSwitch(pos(pattern), block(switchCase(T)), block(statement(T)));% Expr, Case list, Default Case<br/>
+    statementMember(pos(pattern), pos(pattern));<br/>
+    statementCustom(T).<br/>
+<br/>
+:- type switchCase(T) == { pattern, pos(expr), block(statement(T)) }.<br/>
+<br/>
+:- type predType ---&gt; predStatementOr(list(block(statement(predType)))).<br/>
+<br/>
+:- type ruleType ---&gt;<br/>
+    ruleStatementAnd(list(block(statement(predType))));<br/>
+    ruleStatementExport(identifier, block(string));<br/>
+    ruleStatementDesignError(pos(expr));<br/>
+    ruleStatementFileGenerate(pos(expr), pos(expr)).<br/>
+<br/>
+:- type param ---&gt;<br/>
+    paramTyped(pos(typeDef), pos(string));<br/>
+    paramUntyped(pos(string)).<br/>
+<br/>
+:- type coreDef ---&gt;<br/>
+    defFunc(pos(string), block(param), pos(expr));<br/>
+    defPred(pos(string), block(param), block(statement(predType)));<br/>
+    defConst(pos(param), pos(data)).<br/>
+<br/>
+:- type typeDef ---&gt;<br/>
+    typeTuple(block(typeDef));<br/>
+    typeCustom(pos(string), block(typeDef)).<br/>
+<br/>
+:- type entity ---&gt;<br/>
+    entityRule(block(statement(ruleType)));<br/>
+    entityNamedRule(pos(string), block(param), block(statement(ruleType)));<br/>
+    entityRuleHead(pos(string), block(typeDef)); % Block of Params without names<br/>
+    entityCore(coreDef).<br/>
+<br/>
+%:- type moduleDef == { pos(string), block(parse) }.<br/>
+<br/>
+:- type program == list(moduleDef)<br/>
+<br/>
+<br/>
+%:- type defKey == { string, int }.<br/>
+<br/>
+:- implementation.<br/>
+<br/>
+main(!IO) :- io.write_string(&quot;Hello, &quot;, !IO), io.nl(!IO).<br/>
+<br/>
+% :- type calc_info == map(string, int).<br/>
+<br/>
+<br/>
+% type Transform = (Identifier list) * (Pred Statement block)<br/>
+<br/>
+% type Transforms = Transform list<br/>
+<br/>
+% type ProgramError = Position * pExpr * (Pred Statement block)<br/>
+<br/>
+% type ProgramFile = Position * pExpr * pExpr * (Pred Statement block)<br/>
+<br/>
+% type ProgramMap = Map&lt;(string*int), Transforms Def&gt;<br/>
+<br/>
+% type Program =  ProgramMap * (ProgramError list) * (ProgramFile list)<br/>
+<br/>
+% type TokenGroup = TokenGroup1 | TokenGroup2 | TokenGroup3<br/>
+<br/>
+:-type Element<br/>
+%   | ElementList of TokenGroup * Elements<br/>
+%   | ElementIdentifier0 of string<br/>
+%   | ElementIdentifier1 of string<br/>
+%   | ElementString of string<br/>
+%   | ElementAnonymous<br/>
+%   | ElementUnify of string<br/>
+%   | ElementNumber of integer<br/>
+%   | ElementSymbols of string<br/>
+<br/>
+% and Elements = (Position * Element) list<br/>
+<br/>
+% type State = Map&lt;string, Data&gt;<br/>
+<br/>
+% type States = State list option<br/>
+<br/>
+% type sourceName = string list<br/>
+% type sourceContent = string list<br/>
+% type source = sourceName * sourceContent<br/>
+% type build = source list<br/></div>
+</span>
+</div></body></html> 

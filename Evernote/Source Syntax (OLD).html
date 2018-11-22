@@ -1,0 +1,359 @@
+<html>
+<head>
+  <title>Source Syntax (OLD)</title>
+  <basefont face="Segoe UI" size="2" />
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta name="exporter-version" content="Evernote Windows/308094 (en-US, DDL); Windows/10.0.0 (Win64);"/>
+  <style>
+    body, td {
+      font-family: Segoe UI;
+      font-size: 10pt;
+    }
+  </style>
+</head>
+<body>
+<a name="843"/>
+<h1>Source Syntax (OLD)</h1>
+
+<div>
+<span>
+<div><span style="font-size: 13px;"><b>TODO:</b></span></div>
+<ul>
+<li><b><span style="font-size: 13px;">Lamda to be added</span></b></li>
+</ul>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>program:</b> list(programDecl)</span></div>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<hr/>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>programDecl:</b></span></div>
+<ul>
+<li><span style="font-size: 13px;">Feature(featureDecl)</span></li>
+<li><span style="font-size: 13px;">Type(typeDecl)</span></li>
+<li><span style="font-size: 13px;">Data(dataDecl)</span></li>
+</ul>
+<div><span style="font-size: 13px;"><br/></span></div>
+<hr/>
+<div><span style="font-size: 13px;"><br/></span></div>
+<div><span style="font-size: 13px;"><b>dataDecl:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Name: upperIdenitifier</span></li>
+<li><span style="font-size: 13px;">Value: dataExpr                       <i>%No variables, functions, anonymous, or bindings</i></span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<hr/>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>typeDecl:</b></span></div>
+<ul>
+<li><span style="font-size: 13px;">TypeClass(classDecl)</span></li>
+<li><span style="font-size: 13px;">TypeInterface(interfaceDecl)</span></li>
+<li><span style="font-size: 13px;">TypeAlias(lowerIdentifier <i>NEW</i>, IowerIdentifier <i>OLD</i>)</span></li>
+</ul>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<hr/>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div>
+<div><span style="font-size: 13px;"><b>featureDecl:</b></span></div>
+</div>
+<ol type="disc">
+<li style="vertical-align:middle;"><span style="font-size: 13px;"><span style="font-family: 'Helvetica Neue';">Name:</span> <a><span style="font-family: 'Helvetica Neue';">upperIdentifier</span></a></span></li>
+<li style="vertical-align:middle;"><span style="font-size: 13px;">FeatureElements: list(featureElement)</span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<hr/>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>interfaceDecl:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Name: Identifier</span></li>
+<li><span style="font-size: 13px;">GenericArgs: list(typeDef) <i>% Could be empty list</i></span></li>
+<li><span style="font-size: 13px;">ClassList: list(headerDecl) <i>% Should atleast have 1, Generic declaration inside class should be within these types</i></span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<hr/>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>classDecl:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Header: headerDecl</span></li>
+<li><span style="font-size: 13px;">Contractor: body</span></li>
+<li><span style="font-size: 13px;">Elements: plist(functionDecl)  <i>% Should be atleast 1</i></span></li>
+</ol>
+<div><span style="font-size: 13px;"><br/></span></div>
+<hr/>
+<div><span style="font-size: 13px;"><br/></span></div>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><b>channel:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Type: typeDef <i>% No Generics</i></span></li>
+<li><span style="font-size: 13px;">Name: Identifier <i>% Identifier is upper</i></span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>featureElement:</b></span></div>
+<ul>
+<li><span style="font-size: 13px;">predicateDecl(predicateDecl)</span></li>
+<li><span style="font-size: 13px;">functionDecl(functionDecl)</span></li>
+<li><span style="font-size: 13px;">procedureDecl(maybe(header), body)</span></li>
+<li><span style="font-size: 13px;">inputChannel(maybe(typeDef), upperIdentifier)</span></li>
+</ul>
+<div><span style="font-size: 13px;"><br/></span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div><span style="font-size: 13px;"><b>predicateDecl:</b></span></div>
+<div>
+<ol>
+<li><span style="font-size: 13px;">Header: header</span></li>
+<li><span style="font-size: 13px;">Body: body</span></li>
+</ol>
+</div>
+<div><span style="font-size: 13px;"><br/></span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div>
+<div><span style="font-size: 13px;"><b>functionDecl:</b></span></div>
+</div>
+<ol>
+<li><span style="font-size: 13px;">Header: header</span></li>
+<li><span style="font-size: 13px;">Body: body</span></li>
+<li><span style="font-size: 13px;">ReturnExpr: expr</span></li>
+<li><span style="font-size: 13px;">ReturnType: maybe(typeDef)</span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div>
+<div>
+<div><span style="font-size: 13px;"><b>header:</b></span></div>
+</div>
+<ol>
+<li><span style="font-size: 13px;">Name: upperIdentifier</span></li>
+<li><span style="font-size: 13px;">Arguments: list(argParam)</span></li>
+</ol>
+</div>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div>
+<div>
+<div><span style="font-size: 13px;"><b>headerDecl:</b></span></div>
+</div>
+<ol>
+<li><span style="font-size: 13px;">Name: upperIdentifier</span></li>
+<li><span style="font-size: 13px;">GenericArgs: list(upperIdentifier) <i>% Could be empty list</i></span></li>
+<li><span style="font-size: 13px;">Arguments: list(typeParam)</span></li>
+</ol>
+</div>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div>
+<div><span style="font-size: 13px;"><b>typeParam:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Type: typeDef</span></li>
+<li><span style="font-size: 13px;">Name: maybe(identifier)</span></li>
+</ol>
+</div>
+<div><span style="font-size: 13px;"><br/></span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div>
+<div><span style="font-size: 13px;"><b>argParam:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Type: maybe(typeDef)</span></li>
+<li><span style="font-size: 13px;">Name: identifier</span></li>
+</ol>
+</div>
+<div><br/></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><br/></div>
+<div><span style="font-size: 13px;"><b>body:</b> list(list(statement))</span></div>
+<div><span style="font-size: 13px;"><br/></span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div><span style="font-size: 13px;"><b>statement:</b></span></div>
+<ul>
+<li><span style="font-size: 13px;">if(expr, block, maybe(block))</span></li>
+<li><span style="font-size: 13px;">switch(expr, list(caseblock), maybe(caseblock) Default) </span></li>
+<li><span style="font-size: 13px;">stop</span></li>
+<li><span style="font-size: 13px;">throw(expr)</span></li>
+<li>patternMatch(expr, expr)</li>
+<li><span style="font-size: 13px;">FileGenerate(expr NAME, expr CONTENTS)</span></li>
+<li><span style="font-size: 13px;">GetData(identifier, expr) % Call or channel</span></li>
+<li><span style="font-size: 13px;">PutData(indentifier, expr)</span></li>
+<li><span style="font-size: 13px;">Error(expr) % Call another channel variable</span></li>
+<li><span style="font-size: 13px;">log(expr)</span></li>
+<li><span style="font-size: 13px;">continue(expr)</span></li>
+<li><span style="font-size: 13px;">break(expr)</span></li>
+<li><span style="font-size: 13px;">member(expr, expr)</span></li>
+<li><span style="font-size: 13px;">predicateDecl(predicateDecl)</span></li>
+<li><span style="font-size: 13px;">functionDecl(functionDecl)</span></li>
+<li><span style="font-size: 13px;">for(identifier, expr, list(loopCase), <span style="color: rgb(4, 51, 255);">block</span>)</span></li>
+<li><span style="font-size: 13px;">loop(identifier, expr, block)</span></li>
+<li><span style="font-size: 13px;">statement(expr) % Should be a func call to evaluate boolean or a predicate.</span></li>
+</ul>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>expr: </b><i>pureExpr, pattern, predicateArg, Assignment</i></span></div>
+<ul>
+<li><span style="font-size: 13px;">binary(op2, expr, expr)</span></li>
+<li><span style="font-size: 13px;">unary(op1, expo)</span></li>
+<li><span style="font-size: 13px;">Primitive(primitive)</span></li>
+<li><span style="font-size: 13px;">call(upperIdentifier, list(expr)) %only func call</span></li>
+<li><span style="font-size: 13px;">upperIdentifier(UpperIdenitifier)</span></li>
+<li><span style="font-size: 13px;">if(expr CONDITION, <span style="color: rgb(4, 51, 255);">block</span> THEN, maybe(<span style="color: rgb(4, 51, 255);">block</span>) ELSE)</span></li>
+<li><span style="font-size: 13px;">term(maybe(lowerIdentifier), list(expr))</span></li>
+<li><span style="font-size: 13px;">anonymous(identifier)</span></li>
+<li><span style="font-size: 13px;">singleBind(Identifier) : $</span></li>
+<li><span style="font-size: 13px;">multiBug(Identifier): ?</span></li>
+<li><span style="font-size: 13px;">for(identifier, expr, list(loopCase), <span style="color: rgb(4, 51, 255);">block</span>)</span></li>
+<li><span style="font-size: 13px;">loop(identifier, expr, block)</span></li>
+<li><span style="font-size: 13px;">unique(expire, block)</span></li>
+<li><span style="font-size: 13px;">seq(expo, block)</span></li>
+</ul>
+<div><br/></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div>
+<div><span style="font-size: 13px;"><b>caseBlock:</b></span></div>
+</div>
+<ol>
+<li><span style="font-size: 13px;">Pattern:<span style="color: rgb(4, 51, 255);">expr</span></span></li>
+<li><span style="font-size: 13px;">Condition: maybe(<span style="color: rgb(4, 51, 255);">expr</span>)</span></li>
+<li><span style="font-size: 13px;">Block: <span style="color: rgb(4, 51, 255);">block</span></span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>loopCase:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Identifier</span></li>
+<li><span style="font-size: 13px;"><span style="color: rgb(4, 51, 255);">expr</span></span></li>
+</ol>
+<div><span style="font-size: 13px;"><br/></span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div>
+<div><span style="font-size: 13px;"><b>typeDef:</b></span></div>
+<ol>
+<li><span style="font-size: 13px;">Name: basicTypeDef</span></li>
+<li><span style="font-size: 13px;">Args: maybe(list(typeDef))</span></li>
+</ol>
+</div>
+<div><span style="font-size: 13px;"><br/></span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><span style="font-size: 13px;"><br/></span></div>
+<div>
+<div>
+<div><span style="font-size: 13px;"><b>basicTypeDef:</b></span></div>
+</div>
+</div>
+<ol>
+<li><span style="font-size: 13px;">Name: identifier</span></li>
+<li><span style="font-size: 13px;">GenericArgs: maybe(list(basicTypeDef))</span></li>
+</ol>
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><b><span style="font-size: 13px;"><br/></span></b></div>
+<div><span style="font-size: 13px;"><b>op1:</b> unary, negative</span></div>
+<div><span style="font-size: 13px;"><br/></span></div>
+<div><span style="font-size: 13px;"><b>op2:</b></span></div>
+<ul>
+<li><span style="font-size: 13px;">Add</span></li>
+<li><span style="font-size: 13px;">Sub</span></li>
+<li><span style="font-size: 13px;">Mod</span></li>
+<li><span style="font-size: 13px;">Mult</span></li>
+<li><span style="font-size: 13px;">Div</span></li>
+<li><span style="font-size: 13px;">Neq</span></li>
+<li><span style="font-size: 13px;">Gt</span></li>
+<li><span style="font-size: 13px;">Ge</span></li>
+<li><span style="font-size: 13px;">Le</span></li>
+<li><span style="font-size: 13px;">Lt</span></li>
+<li><span style="font-size: 13px;">concat</span></li>
+<li><span style="font-size: 13px;">joinlist</span></li>
+<li><span style="font-size: 13px;">range</span></li>
+<li><span style="font-size: 13px;">In</span></li>
+<li><span style="font-size: 13px;">&lt;&lt;</span></li>
+<li><span style="font-size: 13px;">&gt;&gt;</span></li>
+</ul>
+<div><br/></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><br/></div>
+<div><b>dataExpr: </b></div>
+<ul>
+<li><span style="font-size: 13px;">DataTerm(dataExpr)</span></li>
+<li><span style="font-size: 13px;">Primitive(primitive)</span></li>
+</ul>
+<div><br/></div>
+<div>
+<hr/></div>
+<div><br/></div>
+<div><b>dataTerm(X):</b> <span style="font-size: 13px;">term(maybe(lowerIdentifier), list(X))</span></div>
+<div><span style="font-size: 13px;"><br/></span></div>
+<div>
+<hr/></div>
+<div><span style="font-size: 13px;"><br/></span></div>
+<div><b><span style="font-size: 13px;">primitive:</span></b></div>
+<ul>
+<li><span style="font-size: 13px;">Char</span></li>
+<li><span style="font-size: 13px;">Int</span></li>
+<li><span style="font-size: 13px;">Bool</span></li>
+</ul>
+<div><span style="font-size: 13px;"> </span></div>
+</div>
+<hr/>
+<div style="vertical-align:middle;">
+<div><br/></div>
+<div>define F(X,Y) = </div>
+<div>function G(</div>
+<div><br/></div>
+<div>F(x,y) = H(y) &gt;&gt; K(</div>
+<div><br/></div>
+<div>const</div>
+<div><br/></div>
+<div>Identifier: Lower or Upper!</div>
+<div><br/></div>
+<div><b>Blocks:</b></div>
+<ul>
+<li>Procedure</li>
+<li>Predicate</li>
+<li>Function</li>
+<li>For/Do loop</li>
+</ul>
+<div><br/></div>
+</div>
+<div style="vertical-align:middle;"></div>
+</span>
+</div></body></html> 
