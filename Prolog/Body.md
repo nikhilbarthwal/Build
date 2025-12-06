@@ -1,7 +1,7 @@
 
- BODY
-_______
-
+# BODY
+---
+~~~
 class PredDefinationStream(initialStream, vars, p: Array[PredInstances])
 
     let mutable current: Stream = initialStream
@@ -28,8 +28,9 @@ function Get(stream): Maybe[Stream] =
 
 function PredDefination::GetStream(VarMap) -> Result[Maybe[Stream]] =
     PredInstances[0].GetStream(VarMap).HandleResult(Apply Get)
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 class PredBlockStream(stream, b: SemiDetermBlock)
 
     let filter(vars): Result[Maybe[Vars]] =
@@ -41,9 +42,9 @@ function Get(stream): Maybe[Stream] = Yes PredBlockStream(stream, b)
 
 function PredBlock::GetStream(VarMap) -> Result[Maybe[Stream]] =
     p.GetStream(VarMap).HandleResult(Apply Get)
-
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 class PredInstanceStream(vars, Blocks: Array[PredBlock])
 
     assert Blocks.Length > 0
@@ -81,3 +82,4 @@ function Eval (v: vars): Result[Maybe[Stream]] =
 // PredInstance(PredParams, InitialBlock, Blocks: List[PredBlock])
 function PredInstance::GetStream(varMap) -> Result[Maybe[Stream] =
     match p.Construct(varMap).HandleResult(Apply Eval)
+~~~

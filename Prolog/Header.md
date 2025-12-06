@@ -1,19 +1,22 @@
- HEADER
-_________
+# HEADER
+---
 
+~~~
 module Loop =
     type Var[R, C] = Return(R) | Continue(C)
 
     [<TailRec>] let While (f: C -> LoopVar[R, C]): R = ...
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 type Maybe[T] = Yes[T] | No
 
 module Maybe =
     let Apply[T] (f: T -> Maybe[V]) (z: Maybe[T]): Maybe[V] =
         match z with Yes(x) -> (f x) | No -> No
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 type Result[T] = Ok(T) | Error(exception)
     member HandleError (f: T -> Maybe[Exception]) (x: Result[T]): Maybe[Exception] =
         match x with Error[Exception] -> Yes[Exception] | Ok[T] -> f T
@@ -39,8 +42,9 @@ module Result =
                     | Ok(No) -> Search stream f
                     | x -> x // Both Yes & error
         | x -> x
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 class LazyValue // No variables but fucntions are unevaluated
 class Value // Complete value, everything is evaluated
 
@@ -60,8 +64,9 @@ class Vars: VarsStore, Dictionary
 
 class Expr // One with partial evaluation without variables but func calls present
     public Eval(IVarMap) -> Result1[LazyValue, Type]
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 interface DetermEval =
     Eval(IVarMap) -> Result0
 
@@ -78,8 +83,9 @@ class SemiDetermBlock: SemiDetermEval
 type NonDetermStatement = nondeterm(PredCall) | semidet(SemiDetermStatement)
 
 interface Stream = Next() -> Result[Maybe[Vars]]
-____________________________________________________________________________________
-
+~~~
+---
+~~~
 Program = Map<string, Defination>
 
 type Defination =
@@ -106,3 +112,4 @@ class PredCall(Name, PredCallParams)
 class PredParams(List[TaggedPatterns])
     public Construct(VarMap) -> Result[Maybe[VarStore]] // Stack.New() gets called!
     public Deconstruct(input: VarMap, output: VarStore) -> Result[Maybe[bool]]
+~~~
