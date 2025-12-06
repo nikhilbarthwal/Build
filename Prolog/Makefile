@@ -1,4 +1,4 @@
-sources=$(wildcard *.txt)
+sources=$(wildcard *.txt *.md)
 
 print.ps: $(sources)
 	a2ps -o $@ --font-size=10 -R --columns=1 $^

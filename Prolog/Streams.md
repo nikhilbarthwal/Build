@@ -7,15 +7,29 @@
 interface Stream[T]:
     Current: T
     MoveNext: Result[bool]
+
+[<TailRec>]
+let rec Search[T] stream[T] (f: T -> Result[Maybe[T]]): Result[bool] =
+    match stream.MoveNext() with
+    | Ok(true) -> match (f stream.Current) ->
+                  | Ok(false) -> Search stream f
+                  | x -> x
+    | x -> x
+
 ~~~
 
 ---
 
+#### ListStream:
+
+~~~
+class ListStream[T](List[Maybe[T]]): Stream[T]
+~~~
 
 #### CombineStream:
 
 ~~~
-class CombinedStream[T](intial:T , Array[Stream[T]]): Stream
+class StreamOfStream[T](Stream[Stream[T]]): Stream[T]
 ~~~
 
 ---
@@ -23,7 +37,12 @@ class CombinedStream[T](intial:T , Array[Stream[T]]): Stream
 #### FilterStream:
 
 ~~~
-class FilterStream[T](stream[T], Array[T -> Result[bool]]): Stream
+class FilteredStream[T](stream[T], T -> Result[bool]): Stream[T]
+
+    let filter(vars): Result[bool] =
+        b.Eval(vars).HandleResult(fun b -> if b then update Curent ; Ok(B))
+
+    member MoveNext(): Result[bool] = Result.Search stream filter
 ~~~
 
 ---
@@ -31,7 +50,39 @@ class FilterStream[T](stream[T], Array[T -> Result[bool]]): Stream
 #### StreamOfStream:
 
 ~~~
-class StreamOfStream[T](Stream[Result[Maybe[Stream[T]]]]): Stream
+class TreeStream[T](z: T, l: Array[T -> [Result[Maybe[Stream[T]]]]]): Stream[T]
+
+    assert l.Length > 0
+    let max = Blocks.Length
+    let streams = Queue<stream>()
+
+    let init (v: Vars) (n: int): Result[bool] =
+        assert Stream.Count = n
+        if n = max then Ok[true] else
+            match l[n].Handle(apply <| initHandle n)
+
+    let initHandle n stream: Result[Maybe[bool]] =
+        Streams.push(stream)
+        Result.Search stream <| init (n + 1)
+
+    let next n: Result[Maybe[bool]] =
+        assert Stream.Count > 0
+        asser n < max
+        if n < 0 then Ok(false) else
+            assert Stream.Count = n + 1
+            match streams.Top().Next().Handle(nextHandle n)
+
+    let nextHandle n vars: Result[Maybe[bool]] =
+        if b then (init streams.Top().Current <| n + 1) else
+            streams.Pop() ; (next <| n - 1)
+
+
+    member Curent: T =
+        assert streams.Count = max
+        return stream.Top().Current
+
+    member MoveNext(): Result[bool] =
+        if streams.Count = 0 then (init z 0) else (next <| max - 1)
 ~~~
 
 ---
@@ -39,32 +90,16 @@ class StreamOfStream[T](Stream[Result[Maybe[Stream[T]]]]): Stream
 #### PredDefination:
 
 ~~~
-class PredDefinationStream(initialStream, vars, p: Array[PredInstances])
+function Stream n [l: List[Streams[Vars]]: Result[List[Streams[Vars]] =
+    match p[n].GetStream(vars) with
+    | Error(e) -> Error(e)
+    | Ok(z) -> Stream (n+1) <| match (b) with Yes(stream) -> stream::l | No -> l
 
-    let mutable current: Stream = initialStream
-    let mutable ptr = 0
-
-    let Get (n: int): LoopVar[int, Result[Maybe[VarMap]], int] =
-        if (n = max) then (Return <| Ok No) else
-            ptr <- n
-            match p[0].GetStream(vars) with
-            | Error(e) -> Return <| Error(e)
-            | Ok(No) -> Get <| n + 1
-            | Ok(Yes(s)) -> current <- s ; Continue(n+1)
-
-    let Eval (n: int): LoopVar[int, Result[Maybe[VarMap]], int] =
-        match current.Next() with
-        | Error(e) -> Return <| Error(e)
-        | Ok(No) -> Get <| n + 1
-        | Ok(Yes(v)) -> Return <| Ok(Yes(v))
-
-    member Next() = Loop.While Eval ptr
-
-function Get(stream): Maybe[Stream] =
+function Get l = match l with [] -> Ok(No) | _ -> StreamsOfStreams(ListStream(l))
     let s: Stream = PredDefinationStream(stream, PredInstances) in Ok(Yes(s))
 
 function PredDefination::GetStream(VarMap) -> Result[Maybe[Stream]] =
-    PredInstances[0].GetStream(VarMap).HandleResult(Apply Get)
+    (Stream 0 []).HandleResult(Get)
 ~~~
 
 ----
@@ -72,13 +107,6 @@ function PredDefination::GetStream(VarMap) -> Result[Maybe[Stream]] =
 #### PredBlock
 
 ~~~
-class PredBlockStream(stream, b: SemiDetermBlock)
-
-    let filter(vars): Result[Maybe[Vars]] =
-        b.Eval(vars).HandleResult(fun b -> Ok(if b then Yes(vars) else No))
-
-    member Next() = Result.Search stream filter
-
 function Get(stream): Maybe[Stream] = Yes PredBlockStream(stream, b)
 
 function PredBlock::GetStream(VarMap) -> Result[Maybe[Stream]] =
@@ -90,35 +118,8 @@ function PredBlock::GetStream(VarMap) -> Result[Maybe[Stream]] =
 #### PredInstance
 
 ~~~
-class PredInstanceStream(vars, Blocks: Array[PredBlock])
-
-    assert Blocks.Length > 0
-    let max = Blocks.Length
-    let streams = Queue<stream>(vars)
-
-    let init (n: int) (v: Vars): Result[Maybe[Vars]] =
-        assert Stream.Count = n
-        if n = max then v else
-            match Blocks[n].GetStream(v).Handle(apply <| initHandle n)
-
-    let initHandle n stream: Result[Maybe[Vars]] =
-        Streams.push(stream)
-        Result.Search stream <| init (n + 1)
-
-    let next n: Result[Maybe[Vars]] =
-        assert Stream.Count > 0
-        asser n < max
-        if n < 0 then No else
-            assert Stream.Count = n + 1
-            match Stream.Top().Next().Handle(nextHandle n)
-
-    let nextHandle n vars: Result[Maybe[Vars]] =
-        match vars with
-        | Yes(v) -> init (n + 1) v
-        | No -> Streas.Pop() ; (next <| n - 1)
-
-function PredInstanceStream vars b: Maybe[Stream] =
-    if b then (Yes <| PredInstanceStream(vars, Blocks)) else No
+function PredInstanceStream vars b: Maybe[Stream[Vars]] =
+    if b then (Yes <| TreeStream(vars, Blocks.Map(_.GetStream[Vars])) else No
 
 function Eval (v: vars): Result[Maybe[Stream]] =
     IntialBlock.Eval(v).HandleResult(PredInstanceStreamStream b |> Ok)
