@@ -1,0 +1,114 @@
+# HEADER
+
+~~~
+module Loop =
+    type Var[R, C] = Return(R) | Continue(C)
+
+    [<TailRec>] let While (f: C -> LoopVar[R, C]): R = ...
+~~~
+---
+~~~
+type Maybe[T] = Yes[T] | No
+
+module Maybe =
+    let Apply[T] (f: T -> Maybe[V]) (z: Maybe[T]): Maybe[V] =
+        match z with Yes(x) -> (f x) | No -> No
+~~~
+---
+~~~
+type Result[T] = Ok(T) | Error(exception)
+    member HandleError (f: T -> Maybe[Exception]) (x: Result[T]): Maybe[Exception] =
+        match x with Error[Exception] -> Yes[Exception] | Ok[T] -> f T
+
+    member HandleResult (f: T -> Result[V]) (x: Result[T]): Result[V] =
+        match x with Error[Exception] -> Error[Exception] | Ok(x) -> (f x)
+
+module Result =
+    [<TailRec>]
+    let Loop (f: T -> Result[LoopVar[R, T]]) (z: Result[T]): Result[R] =
+        match z with
+        | Error(e) -> Error(e)
+        | Ok(x: T) -> match (f x) ->
+                      | Error(e) -> Error(e)
+                      | Ok(y: LoopVar[R, T]) -> match y with
+                                 | Return(r) -> Ok(r)
+                                 | Continue(c) -> Loop f c
+
+    [<TailRec>]
+    let rec Search stream (f: Vars -> Result[Maybe[Vars]]): Result[Maybe[Vars]] =
+        match stream.Next() with
+        | Yes(v) -> match (f v) ->
+                    | Ok(No) -> Search stream f
+                    | x -> x // Both Yes & error
+        | x -> x
+~~~
+---
+~~~
+class LazyValue // No variables but fucntions are unevaluated
+class Value // Complete value, everything is evaluated
+
+interface VarMap =
+    Get(name) -> Result[LazyValue * Type]
+    IsMutable(Name) -> Maybe[bool]
+
+interface VarStore: VarMap =
+    Add(name, type, value) -> Maybe[exception]
+
+interface VarDictionary: VarStore =
+    Update(name, value) -> Maybe[exception]
+    Add(name, type, value, mutable: bool) -> Maybe[exception]
+
+class Vars: VarsStore, Dictionary
+    public New : unit -> Vars
+
+class Expr // One with partial evaluation without variables but func calls present
+    public Eval(IVarMap) -> Result1[LazyValue, Type]
+~~~
+---
+~~~
+interface DetermEval =
+    Eval(IVarMap) -> Result0
+
+interface SemiDetermEval =
+    Eval(VarMap) -> Result1[bool]
+
+class DetermStatement: DetermEval = ...
+
+type SemiDetermStatement: SemiDetermEval = assert(Expr) | determ(DetermStatement)
+
+class DetermBlock: DetermEval
+class SemiDetermBlock: SemiDetermEval
+
+type NonDetermStatement = nondeterm(PredCall) | semidet(SemiDetermStatement)
+
+interface Stream = Next() -> Result[Maybe[Vars]]
+~~~
+---
+~~~
+Program = Map<string, Defination>
+
+type Defination =
+    | Function(FuncCall)
+    | NoneDetermPredicate(PredDefination)
+    | DetermPredictace(SemiDetermBlock)
+
+class PredDefination(List[Types], Array[PredInstances])
+    public GetStream(VarMap) -> Result[May[Stream]]
+
+class PredInstance(PredParams, InitialBlock: SemiDeterm, Blocks: List[PredBlock])
+    assert (Blocks is not empty)
+    public GetStream(Result[May[Stream]]VarMap) -> Result[May[Stream]]
+
+class SemiDetermBlock(List<SemiDetermStatement>)
+    public Eval(VarStore) -> Result[bool]
+
+class PredBlock(p: PredCall, b: SemiDetermBlock)
+    public GetStream(VarMap) -> Result[May[Stream]]
+
+class PredCall(Name, PredCallParams)
+    public GetStream(Result[May[Stream]]VarMap) -> Result[May[Stream]]
+
+class PredParams(List[TaggedPatterns])
+    public Construct(VarMap) -> Result[Maybe[VarStore]] // Stack.New() gets called!
+    public Deconstruct(input: VarMap, output: VarStore) -> Result[Maybe[bool]]
+~~~
