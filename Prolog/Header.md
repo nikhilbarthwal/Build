@@ -1,6 +1,5 @@
 # HEADER
 ---
-
 ~~~
 module Loop =
     type Var[R, C] = Return(R) | Continue(C)

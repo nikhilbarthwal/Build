@@ -1,17 +1,17 @@
- USAGE
-_______
-
+# USAGE
+---
 In Statement as while :-
-
+~~~
 v1 = expr1
 v2 = expr2
 v3 = expr3
 while PredCall:
     determ statement block
+~~~
 
+In code, that translate to:
 
-in code, that translate to:
-
+~~~
 let While(PredCall, Block, v0: StackedVarsDictionary): Maybe<Exception> =
 
     let Eval stream: LoopVar[Maybe[exception], Stream] =
@@ -23,15 +23,17 @@ let While(PredCall, Block, v0: StackedVarsDictionary): Maybe<Exception> =
                         | Yes(e) -> Return(Yes(e))
 
     PredCall.GetStream(v0: VarMap).HandleError(Loop.While Eval)
-
-
+~~~
 
 In if/then/else statement:-
 
+~~~
 if (once PredCall) then BTrue else BFalse
+~~~
 
 in code, that translate to:
 
+~~~
 let ifThenElseStatement(PredCall, BTrue, BFalse, vars): Maybe[Exception] =
 
     let evalVars (v: Maybe[Vars]): Maybe[Exception] =
@@ -55,3 +57,4 @@ let ifThenElseExpression(PredCall, BTrue, BFalse, vars): Result[LazyValue, Type]
         match z with Yes(s) -> (evalStream s) | No -> BFalse.Eval(vars)
 
     PredCall.GetStream(vars).HandleError(eval)
+~~~

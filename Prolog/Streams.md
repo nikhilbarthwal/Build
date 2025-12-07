@@ -1,4 +1,3 @@
-
 # Streams
 
 #### Definition:
@@ -19,7 +18,6 @@ let rec Search[T] stream[T] (f: T -> Result[Maybe[T]]): Result[bool] =
 ~~~
 
 ---
-
 #### ListStream:
 
 ~~~
