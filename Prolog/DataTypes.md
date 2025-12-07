@@ -1,11 +1,14 @@
 # Data Types
----
+
 **Data Types:**
 
-- Structs: Typical Data classes providing structural equality with optional attached methods. Can inherit interfaces.
-- ADT: Standard discriminated union with optional attached methods. Can inherit interfaces.
+- Structs: Typical Data classes providing structural equality with optional attached
+methods. Can inherit interfaces.
+- ADT: Standard discriminated union with optional attached methods. Can inherit
+interfaces.
 - Tuples: Simple a collection of mixed data
-- Classes: Typical Scala/F# type classes with mutable/immutable members with optional attached methods. Can inherit interfaces.
+- Classes: Typical Scala/F# type classes with mutable/immutable members with optional
+attached methods. Can inherit interfaces.
 
 ---
 **Structs**
@@ -71,6 +74,7 @@ ADT's can be generics which start with capital. but they can be preceded by priv
 or public. Default is public!
 
 ---
+**Classes**
 ~~~
 class Identifier( Identifier: type, Identifier: type)
     new

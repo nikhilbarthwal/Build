@@ -11,7 +11,6 @@
 - Dependent Types
 
 ---
-
 **Language defintions:**
 
 - Types
@@ -20,9 +19,7 @@
 - Classes
 - Predicates
 
-
 ---
-
 **Libraries:**
 
 - File
@@ -32,11 +29,13 @@
 - IO
 - Log
 
+---
 **Problem to be solved:**
 
 - Separation of Concerns/Aspects
 - Reactive Derivation/Clustering
 
+---
 **Features:**
 
 - Very concise
@@ -50,22 +49,21 @@
 - Plug & Play architecture
 
 ---
-
 **Source File:**
 
-Data:
+*Data:*
 
 - tables
 - Lists
 - constants
 
-Types:
+*Types:*
 
 - Union
 - Interface
 - Classes
 
-Feature:
+*Feature:*
 
 - Action (head or headless)
 - Define (body/predicate, or bodiless)

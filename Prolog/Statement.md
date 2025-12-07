@@ -1,5 +1,4 @@
 # Statement
----
 
 var declaration
 ~~~
@@ -30,11 +29,11 @@ Define a function. Here the list can be empty or missing also.
 ~~~
 def Identifier(Pattern: type, Pattern: type, ...) -> type:
 
-	expression1
+    expression1
 
-	expresison2
+    expresison2
 
-	expression3
+    expression3
 
 end
 ~~~
@@ -49,27 +48,27 @@ if {bool expr} then {expr} else {expr} // Can precede with def or let definition
 
 if {bool expr} then: // Can precede with def or let definitions,
                         without else is only valid for void.
-	expression1
-	expresison2
-	expression3
+    expression1
+    expresison2
+    expression3
 end
 
 if {bool expr} then: // Can precede with def or let definitions,
                         without else is only valid for void.
-	expression1
-	expresison2
-	expression3
+    expression1
+    expresison2
+    expression3
 else expression
 
 if {bool expr} then: // Can precede with def or let definitions,
                         without else is only valid for void.
-	expression1
-	expresison2
-	expression3
+    expression1
+    expresison2
+    expression3
 else:
-	expression1
-	expresison2
-	expression3
+    expression1
+    expresison2
+    expression3
 end
 ~~~
 If then else definitions. These are expressions and would proceed with let/var/def
@@ -77,58 +76,53 @@ but not def block. Notice that end is only needed when last clause is block.
 
 ---
 **Pipe expressions are:**
+~~~
+expression1 >>   expression1 >>   expression1 >>  expression1
+~~~
 
-*expression1 >>   expression1 >>   expression1 >>  expression1*
+They can be preceded with let def or var definitions, if they are expressions. If
+they are multiline then, for unit it is:
+~~~
+def/let/var = expression1
+              >>  expression1
+              >>  expression1
+              >>  expression1
+~~~
+Key to understand that for expressions, operators can flow to next line. This is
+true for other operators also.
 
-They can be preceded with let def or var definitions, if they are expressions. If they are multiline then, for unit it is:
-
-*def/let/var = expression1*
-
-*>>   expression1*
-
-*>>   expression1*
-
-*>>  expression1*
-
-Key to understand that for expressions, operators can flow to next line. This is true for other operators also.
-
-________________________________________________________
-
+---
 **Operators**
 
-Operators are basically classified into groups defined by interfaces (eg type classes). They can be overridden. In parsing operators, can spill to next line.
+Operators are basically classified into groups defined by interfaces (eg type
+classes). They can be overridden. In parsing operators, can spill to next line.
 
-BooleanOperator: =, >= , <=
+- *BooleanOperator:* =, >= , <=
+- *ArithemeticOperator:* +, -, *. /
+- *LogicalOperator:* or, and, not
+- *BitwiseShift:* >>, <<
 
-ArithemeticOperator: +, -, *. /
-
-LogicalOperator: or, and, not
-
-BitwiseShift: >>, <<
-
-________________________________________________________
-
+---
 **List Comprehensions**
 
-*[num1 .. num2]:* Here num2 >= num1. List will be num1, num1+1, ... , num2 -1.
-
-*[num1 .. num2: step]* : Here no relation between num2 and num1. But if num1 > num2, then step should be -1
+- *[num1 .. num2]:* Here num2 >= num1. List will be num1, num1+1, ... , num2 -1.
+- *[num1 .. num2: step]* : Here no relation between num2 and num1.
+But if num1 > num2, then step should be -1
 
 *[ Expr || clause, clause, clause, ...]*
 
-here clause can be:
-
+Here clause can be:
 - Bool condition
 - Members e.g. X in [1..10]
 - Assignment with let
 
-________________________________________________________
-
+---
 **Let expressions**
 
 Another type of expression is:
-
+~~~
 let Pattern: type in {expr}
+~~~
 
 ---
 **Function evaluation using Type**
@@ -151,7 +145,7 @@ from Identifier import functions, classes, types, alias
 
 begin
 
-	def, let, var , functions, types, etc.
+    def, let, var , functions, types, etc.
 end
 ~~~
 
