@@ -223,3 +223,37 @@ sql/
 x64/
 x86/
 ~$*
+
+# .NET
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.user
+*.suo
+*.cache
+*.log
+
+# IDE
+.vs/
+.vscode/
+*.sln.docstates
+
+# NuGet
+*.nupkg
+packages/
+
+# ANTLR generated files
+*.tokens
+*.interp
+
+# Build output
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+# OS files
+.DS_Store
+Thumbs.db
+
